@@ -1,0 +1,25 @@
+[tool.black]
+line-length = 100
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+line_length = 100
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--verbose"
+testpaths = [
+  "./aws/api/v1/tests",
+]
+markers = [
+  "integration: marks integration test",
+  "unit: marks unit test",
+]
+
+[tool.mypy]
+ignore_missing_imports = true
+explicit_package_bases = true
