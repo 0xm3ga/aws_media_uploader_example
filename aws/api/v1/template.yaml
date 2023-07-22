@@ -1,0 +1,139 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: An AWS Serverless application that receives and stores user-uploaded images and videos.
+
+Parameters:
+  MediaDomainName:
+    Type: String
+    Description: Media custom domain name
+
+  RootHostedZone:
+    Type: String
+    Description: Root Hosted Zone
+
+  RawMediaBucketName:
+    Type: String
+    Description: Media bucket name
+
+  ProcessedMediaBucketName:
+    Type: String
+    Description: Media bucket name
+
+Resources:
+  # Lambda
+  ProcessMediaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/lamdbas/process_media_function/
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref RawMediaBucketName
+        - S3CrudPolicy:
+            BucketName: !Ref ProcessedMediaBucketName
+
+  # Permissions
+  RawMediaBucketEventPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - ProcessMediaFunction
+    Properties:
+      Action: lambda:invokeFunction
+      SourceAccount: !Ref AWS::AccountId
+      FunctionName: !Ref ProcessMediaFunction
+      SourceArn: !Sub "arn:aws:s3:::${RawMediaBucketName}"
+      Principal: s3.amazonaws.com
+
+  # Certificates
+  MediaCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref MediaDomainName
+      ValidationMethod: DNS
+
+  # Custom domains
+  MediaDomain:
+    Type: AWS::ApiGateway::DomainName
+    DependsOn:
+      - MediaCertificate
+    Properties:
+      DomainName: !Ref MediaDomainName
+      CertificateArn: !Ref MediaCertificate
+
+  # Buckets
+  RawMediaBucket:
+    Type: AWS::S3::Bucket
+    DependsOn:
+      - ProcessMediaFunction
+      - RawMediaBucketEventPermission
+    Properties:
+      BucketName: !Ref RawMediaBucketName
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Function: !GetAtt ProcessMediaFunction.Arn
+            Event: s3:ObjectCreated:*
+      # CorsConfiguration:
+      #   CorsRules:
+      #     - AllowedHeaders: ["*"]
+      #       AllowedMethods: ["GET", "PUT"]
+      #       AllowedOrigins: ["https://media.bluecollarverse.com"]
+      #       MaxAge: 3000
+
+  ProcessedMediaBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref ProcessedMediaBucketName
+
+  # API Gateway
+  MediaApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: ./api-spec/bundled.yaml
+
+  # API mappings
+  MediaApiBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    DependsOn:
+      - MediaApi
+      - MediaDomain
+    Properties:
+      BasePath: v1
+      DomainName: !Ref MediaDomain
+      RestApiId: !Ref MediaApi
+      Stage: !Ref MediaApi.Stage
+
+  MediaApiRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref RootHostedZone
+      Name: !Ref MediaDomainName
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt MediaDomain.DistributionDomainName
+        HostedZoneId: Z2FDTNDATAQYW2
+        EvaluateTargetHealth: false
+
+  # Lambda
+  UploadMediaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/lamdbas/upload_media_function/
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref RawMediaBucket
+      Events:
+        Upload:
+          Type: Api
+          Properties:
+            Path: /upload
+            Method: post
+            RestApiId:
+              Ref: MediaApi

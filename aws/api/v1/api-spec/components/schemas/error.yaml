@@ -1,0 +1,10 @@
+title: Error
+type: object
+description: Object representing an error.
+required:
+  - error
+properties:
+  error:
+    type: string
+    description: A human-readable message providing more details about the error.
+    example: Internal service error.

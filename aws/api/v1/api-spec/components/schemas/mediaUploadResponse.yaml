@@ -1,0 +1,10 @@
+title: Media upload response
+type: object
+description: An that contains media upload response.
+properties:
+  message:
+    type: string
+    description: Short hello string
+    example: Hello world!
+required:
+  - message
