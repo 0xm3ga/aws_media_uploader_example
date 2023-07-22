@@ -1,0 +1,79 @@
+openapi: 3.0.1
+info:
+  title: Bluecollarverse Media API
+  description: Meida API for the project
+  version: 1.0.0
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+  - url: https://media.bluecollarverse.com/v1
+paths:
+  /upload:
+    post:
+      tags:
+        - Media
+      summary: Uploads media into S3
+      description: Uploads media (photos and video) into an S3 bucket
+      operationId: postUpload
+      responses:
+        '200':
+          description: Media successfull uploaded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mediaUploadResponse'
+        '400':
+          description: Bad Request, usually due to invalid event data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: An unexpected error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '503':
+          description: External service unavailable or request rejected.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '504':
+          description: Request to external service timed out.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        type: aws_proxy
+        uri:
+          Fn::Sub: >-
+            arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UploadMediaFunction.Arn}/invocations
+components:
+  schemas:
+    mediaUploadResponse:
+      title: Media upload response
+      type: object
+      description: An that contains media upload response.
+      properties:
+        message:
+          type: string
+          description: Short hello string
+          example: Hello world!
+      required:
+        - message
+    error:
+      title: Error
+      type: object
+      description: Object representing an error.
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: A human-readable message providing more details about the error.
+          example: Internal service error.

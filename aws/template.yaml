@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: An AWS Serverless Specification template describing infra for APIs and their documentation (using S3-hosted Swagger UI).
+
+Parameters:
+  MediaDomainName:
+    Type: String
+    Description: Domain name to be used for the API.
+    Default: media.<my.domain.com>
+  RootHostedZone:
+    Type: String
+    Description: Root Hosted Zone
+    Default: <hosted zone id>
+  MediaBucketName:
+    Type: String
+    Description: Media bucket name
+    Default: media.<my.domain.com>
+
+  # DocsDomainName:
+  #   Type: String
+  #   Description: Domain name to be used for the docs.
+  #   Default: docs.<my.domain.com>
+  # DocsBucketName:
+  #   Type: String
+  #   Description: Bucket name to be used for hosting API docs.
+  #   Default: <my_project_name>-docs
+
+Resources:
+  # API stacks
+  ApiV1Stack:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: ./api/v1/template.yaml
+      Parameters:
+        MediaDomainName: !Ref MediaDomainName
+        RawMediaBucketName: !Sub ${MediaBucketName}-raw
+        ProcessedMediaBucketName: !Sub ${MediaBucketName}-processed
+        # DocsDomainName: !Ref DocsDomainName
+        RootHostedZone: !Ref RootHostedZone
+#   # Docs stacks
+#   DocsStack:
+#     Type: AWS::Serverless::Application
+#     Properties:
+#       Location: ./docs/template.yaml
+#       Parameters:
+#         DocsBucketName: !Ref DocsBucketName
+#         DocsDomainName: !Ref DocsDomainName
+#         RootHostedZone: !Ref RootHostedZone
+
+# Outputs:
+#   DocsCloudFrontDistributionIdOutput:
+#     Description: Docs CloudFront Distribution ID
+#     Value: !GetAtt DocsStack.Outputs.DocsCloudFrontDistributionIdOutput
+#   DocsBucketNameOutput:
+#     Description: API Docs S3 bucket
+#     Value: !GetAtt DocsStack.Outputs.DocsBucketNameOutput
