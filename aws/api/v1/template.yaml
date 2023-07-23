@@ -19,6 +19,14 @@ Parameters:
     Type: String
     Description: Media bucket name
 
+  MainUserPoolId:
+    Type: String
+    Description: Media user pool id
+
+  MainUserPoolArn:
+    Type: String
+    Description: Media user pool arn
+
 Resources:
   # Lambda
   ProcessMediaFunction:
@@ -95,7 +103,11 @@ Resources:
           Name: AWS::Include
           Parameters:
             Location: ./api-spec/bundled.yaml
-
+      Auth:
+        DefaultAuthorizer: MainCognitoAuthorizer
+        Authorizers:
+          MainCognitoAuthorizer:
+            UserPoolArn: !Ref MainUserPoolArn
   # API mappings
   MediaApiBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
