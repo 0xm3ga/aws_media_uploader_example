@@ -26,6 +26,15 @@ Parameters:
   #   Default: <my_project_name>-docs
 
 Resources:
+  # Cognito stack
+  CognitoStack:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: ./cognito/template.yaml
+      Parameters:
+        RawMediaBucketName: !Sub ${MediaBucketName}-raw
+        ProcessedMediaBucketName: !Sub ${MediaBucketName}-processed
+
   # API stacks
   ApiV1Stack:
     Type: AWS::Serverless::Application
@@ -35,8 +44,10 @@ Resources:
         MediaDomainName: !Ref MediaDomainName
         RawMediaBucketName: !Sub ${MediaBucketName}-raw
         ProcessedMediaBucketName: !Sub ${MediaBucketName}-processed
-        # DocsDomainName: !Ref DocsDomainName
         RootHostedZone: !Ref RootHostedZone
+        MainUserPoolId: !GetAtt CognitoStack.Outputs.MainUserPoolIdOutput
+        MainUserPoolArn: !GetAtt CognitoStack.Outputs.MainUserPoolArnOutput
+  # DocsDomainName: !Ref DocsDomainName
 #   # Docs stacks
 #   DocsStack:
 #     Type: AWS::Serverless::Application
