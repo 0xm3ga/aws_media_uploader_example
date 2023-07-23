@@ -1,5 +1,60 @@
 # AWS Media Uploader
 
+## Backend architecture
+
+This application has several components:
+
+- Two Amazon S3 buckets to store raw and processed media files.
+- Two AWS Lambda functions to upload and process media files.
+- AWS Certificate Manager to handle SSL for the custom domain.
+- Amazon API Gateway to handle incoming requests.
+- AWS Route53 for DNS configuration.
+
+Here is a quick overview of the AWS infrastructure for hosting a React website on S3. Below diagram summarizes the architecture.
+
+![AWS Architecture](docs/aws-architecture.png)
+
+### Requirements
+
+To deploy and run this application, you need:
+
+- AWS SAM CLI
+- AWS CLI
+- Python 3.9
+- AWS Account with appropriate permissions
+
+### Setup AWS CLI and Credentials
+
+Before deploying the application, you need to setup the AWS CLI and configure your AWS credentials.
+
+1. Install the AWS CLI. You can follow the official guide [here](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html).
+
+2. Configure your AWS credentials by running `aws configure`. You'll need your AWS Access Key ID, Secret Access Key, and default region name.
+
+```bash
+aws configure
+```
+
+### Building the Application
+
+To build the application, navigate to the project root directory and run:
+
+```bash
+sam build
+```
+
+This command will compile your lambda functions and create a deployment package in the `.aws-sam/build` directory.
+
+### Deploying the Application
+
+To deploy the application, you can use the `sam deploy` command with guided mode on:
+
+```bash
+sam deploy --guided
+```
+
+You'll be asked for the stack name, AWS region, and parameters (like your custom domain name, root hosted zone, and bucket names). The command will create necessary CloudFormation stack and deploy your resources.
+
 ## Project setup
 
 ### Virtual Environment
