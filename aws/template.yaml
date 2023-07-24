@@ -35,6 +35,16 @@ Resources:
         RawMediaBucketName: !Sub ${MediaBucketName}-raw
         ProcessedMediaBucketName: !Sub ${MediaBucketName}-processed
 
+  # Default API base path mapping
+  DefaultApiBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    DependsOn:
+      - ApiV1Stack
+    Properties:
+      DomainName: !Ref MediaDomainName
+      RestApiId: !GetAtt ApiV1Stack.Outputs.MediaApiIdOutput
+      Stage: !GetAtt ApiV1Stack.Outputs.MediaApiStageOutput
+
   # API stacks
   ApiV1Stack:
     Type: AWS::Serverless::Application
@@ -47,7 +57,7 @@ Resources:
         RootHostedZone: !Ref RootHostedZone
         MainUserPoolId: !GetAtt CognitoStack.Outputs.MainUserPoolIdOutput
         MainUserPoolArn: !GetAtt CognitoStack.Outputs.MainUserPoolArnOutput
-  # DocsDomainName: !Ref DocsDomainName
+# DocsDomainName: !Ref DocsDomainName
 #   # Docs stacks
 #   DocsStack:
 #     Type: AWS::Serverless::Application

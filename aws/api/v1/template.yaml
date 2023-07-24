@@ -198,3 +198,11 @@ Resources:
             RestApiId: !Ref MediaApi
             Auth:
               Authorizer: NONE
+
+Outputs:
+  MediaApiIdOutput:
+    Description: Media API ID Output
+    Value: !Ref MediaApi
+  MediaApiStageOutput:
+    Description: API Docs S3 bucket
+    Value: !Ref MediaApi.Stage
