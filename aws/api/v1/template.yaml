@@ -29,10 +29,10 @@ Parameters:
 
 Resources:
   # Lambda
-  ProcessMediaFunction:
+  ImageProcessingFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: src/lamdbas/process_media_function/
+      CodeUri: src/lambdas/image_processing_function/
       Handler: app.lambda_handler
       Runtime: python3.9
       Policies:
@@ -40,16 +40,51 @@ Resources:
             BucketName: !Ref RawMediaBucketName
         - S3CrudPolicy:
             BucketName: !Ref ProcessedMediaBucketName
+      Environment:
+        Variables:
+          PROCESSED_MEDIA_BUCKET: !Ref ProcessedMediaBucketName
+
+  VideoProcessingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/lambdas/video_processing_function/
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref RawMediaBucketName
+        - S3CrudPolicy:
+            BucketName: !Ref ProcessedMediaBucketName
+      Environment:
+        Variables:
+          PROCESSED_MEDIA_BUCKET: !Ref ProcessedMediaBucketName
+
+  MediaProcessingDispatcher:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/lambdas/media_processing_dispatcher/
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref RawMediaBucketName
+        - S3CrudPolicy:
+            BucketName: !Ref ProcessedMediaBucketName
+      Environment:
+        Variables:
+          IMAGE_PROCESSING_FUNCTION_NAME: !Ref ImageProcessingFunction
+          VIDEO_PROCESSING_FUNCTION_NAME: !Ref VideoProcessingFunction
+          RDS_SECRET_NAME: your-rds-secret-name
 
   # Permissions
   RawMediaBucketEventPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
-      - ProcessMediaFunction
+      - MediaProcessingDispatcher
     Properties:
       Action: lambda:invokeFunction
       SourceAccount: !Ref AWS::AccountId
-      FunctionName: !Ref ProcessMediaFunction
+      FunctionName: !Ref MediaProcessingDispatcher
       SourceArn: !Sub "arn:aws:s3:::${RawMediaBucketName}"
       Principal: s3.amazonaws.com
 
@@ -73,20 +108,14 @@ Resources:
   RawMediaBucket:
     Type: AWS::S3::Bucket
     DependsOn:
-      - ProcessMediaFunction
+      - MediaProcessingDispatcher
       - RawMediaBucketEventPermission
     Properties:
       BucketName: !Ref RawMediaBucketName
       NotificationConfiguration:
         LambdaConfigurations:
-          - Function: !GetAtt ProcessMediaFunction.Arn
+          - Function: !GetAtt MediaProcessingDispatcher.Arn
             Event: s3:ObjectCreated:*
-      # CorsConfiguration:
-      #   CorsRules:
-      #     - AllowedHeaders: ["*"]
-      #       AllowedMethods: ["GET", "PUT"]
-      #       AllowedOrigins: ["https://media.bluecollarverse.com"]
-      #       MaxAge: 3000
 
   ProcessedMediaBucket:
     Type: AWS::S3::Bucket
@@ -108,6 +137,7 @@ Resources:
         Authorizers:
           MainCognitoAuthorizer:
             UserPoolArn: !Ref MainUserPoolArn
+
   # API mappings
   MediaApiBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
@@ -135,7 +165,7 @@ Resources:
   UploadMediaFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: src/lamdbas/upload_media_function/
+      CodeUri: src/lambdas/upload_media_function/
       Handler: app.lambda_handler
       Runtime: python3.9
       Policies:
@@ -149,3 +179,22 @@ Resources:
             Method: post
             RestApiId:
               Ref: MediaApi
+
+  RetrieveMediaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/lambdas/retrieve_media_function/
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref ProcessedMediaBucket
+      Events:
+        Upload:
+          Type: Api
+          Properties:
+            Path: /{filename}
+            Method: get
+            RestApiId: !Ref MediaApi
+            Auth:
+              Authorizer: NONE
