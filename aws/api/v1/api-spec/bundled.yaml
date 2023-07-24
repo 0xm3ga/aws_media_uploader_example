@@ -9,16 +9,81 @@ info:
 servers:
   - url: https://media.bluecollarverse.com/v1
 paths:
+  /{filename}:
+    get:
+      tags:
+        - Media
+      summary: Retrieve media from S3
+      description: Retrieve media (photos and video) from an S3 bucket
+      operationId: retrieveMedia
+      parameters:
+        - name: filename
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Filename of the media to retrieve
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Optional size of the media to retrieve
+      responses:
+        '200':
+          description: Media successfully retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mediaRetrieveResponse'
+        '400':
+          description: Bad Request, usually due to invalid parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: File not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: An unexpected error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '503':
+          description: External service unavailable or request rejected.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '504':
+          description: Request to external service timed out.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-amazon-apigateway-integration:
+        httpMethod: GET
+        type: aws_proxy
+        uri:
+          Fn::Sub: >-
+            arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RetrieveMediaFunction.Arn}/invocations
   /upload:
     post:
       tags:
         - Media
       summary: Uploads media into S3
       description: Uploads media (photos and video) into an S3 bucket
-      operationId: postUpload
+      operationId: mediaUpload
+      requestBody:
+        $ref: '#/components/requestBodies/uploadRequestBody'
       responses:
-        '200':
-          description: Media successfull uploaded.
+        '201':
+          description: Media successfully uploaded.
           content:
             application/json:
               schema:
@@ -55,17 +120,30 @@ paths:
             arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UploadMediaFunction.Arn}/invocations
 components:
   schemas:
-    mediaUploadResponse:
-      title: Media upload response
+    mediaRetrieveResponse:
       type: object
-      description: An that contains media upload response.
       properties:
-        message:
+        url:
           type: string
-          description: Short hello string
-          example: Hello world!
+          description: URL where the uploaded file can be accessed.
+        id:
+          type: string
+          description: Unique identifier for the uploaded file.
+        fileName:
+          type: string
+          description: The original name of the uploaded file.
+        fileSize:
+          type: integer
+          description: The size of the uploaded file in bytes.
+        fileType:
+          type: string
+          description: The type of the uploaded file.
       required:
-        - message
+        - url
+        - id
+        - fileName
+        - fileSize
+        - fileType
     error:
       title: Error
       type: object
@@ -77,3 +155,38 @@ components:
           type: string
           description: A human-readable message providing more details about the error.
           example: Internal service error.
+    mediaUploadResponse:
+      type: object
+      properties:
+        url:
+          type: string
+          description: URL where the uploaded file can be accessed.
+        id:
+          type: string
+          description: Unique identifier for the uploaded file.
+        fileName:
+          type: string
+          description: The original name of the uploaded file.
+        fileSize:
+          type: integer
+          description: The size of the uploaded file in bytes.
+        fileType:
+          type: string
+          description: The type of the uploaded file.
+      required:
+        - url
+        - id
+        - fileName
+        - fileSize
+        - fileType
+  requestBodies:
+    uploadRequestBody:
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              file:
+                type: string
+                format: binary
+      required: true
