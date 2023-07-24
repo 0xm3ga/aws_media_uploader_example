@@ -1,0 +1,61 @@
+get:
+  tags:
+    - Media
+  summary: Retrieve media from S3
+  description: Retrieve media (photos and video) from an S3 bucket
+  operationId: retrieveMedia
+  parameters:
+    - name: filename
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Filename of the media to retrieve
+    - name: size
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Optional size of the media to retrieve
+  responses:
+    "200":
+      description: Media successfully retrieved.
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/mediaRetrieveResponse.yaml"
+    "400":
+      description: Bad Request, usually due to invalid parameters.
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/error.yaml"
+    "404":
+      description: File not found.
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/error.yaml"
+    "500":
+      description: An unexpected error occurred.
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/error.yaml"
+    "503":
+      description: External service unavailable or request rejected.
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/error.yaml"
+    "504":
+      description: Request to external service timed out.
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/error.yaml"
+  x-amazon-apigateway-integration:
+    httpMethod: GET
+    type: aws_proxy
+    uri:
+      Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RetrieveMediaFunction.Arn}/invocations

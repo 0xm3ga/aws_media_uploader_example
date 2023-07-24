@@ -3,10 +3,12 @@ post:
     - Media
   summary: Uploads media into S3
   description: Uploads media (photos and video) into an S3 bucket
-  operationId: postUpload
+  operationId: mediaUpload
+  requestBody:
+    $ref: "../components/requestBodies/uploadRequestBody.yaml"
   responses:
-    "200":
-      description: Media successfull uploaded.
+    "201":
+      description: Media successfully uploaded.
       content:
         application/json:
           schema:
