@@ -1,16 +1,17 @@
 # AWS Media Uploader
 
-## Backend architecture
+## Backend Architecture
 
 This application has several components:
 
-- Two Amazon S3 buckets to store raw and processed media files.
-- Two AWS Lambda functions to upload and process media files.
+- Three AWS S3 buckets for storing raw and processed media files.
+- Five AWS Lambda functions responsible for media upload, dispatching, processing, and retrieving.
 - AWS Certificate Manager to handle SSL for the custom domain.
 - Amazon API Gateway to handle incoming requests.
 - AWS Route53 for DNS configuration.
+- AWS Cognito User Pools for user management.
 
-Here is a quick overview of the AWS infrastructure for hosting a React website on S3. Below diagram summarizes the architecture.
+Below is a quick overview of the AWS infrastructure for hosting a React website on S3. The diagram summarizes the architecture.
 
 ![AWS Architecture](docs/aws-architecture.png)
 
