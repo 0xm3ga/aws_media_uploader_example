@@ -28,6 +28,18 @@ Parameters:
     Description: Media user pool arn
 
 Resources:
+  # Lambda layers
+  AwsUtilsLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: AwsUtilsLayer
+      Description: Layer that contains common aws utils (like boto3)
+      ContentUri: src/layers/aws_utils_layer/
+      CompatibleRuntimes:
+        - python3.9
+    Metadata:
+      BuildMethod: python3.9
+
   # Lambda
   ImageProcessingFunction:
     Type: AWS::Serverless::Function
@@ -35,6 +47,8 @@ Resources:
       CodeUri: src/lambdas/image_processing_function/
       Handler: app.lambda_handler
       Runtime: python3.9
+      Layers:
+        - !Ref AwsUtilsLayer
       Policies:
         - S3ReadPolicy:
             BucketName: !Ref RawMediaBucketName
@@ -50,6 +64,8 @@ Resources:
       CodeUri: src/lambdas/video_processing_function/
       Handler: app.lambda_handler
       Runtime: python3.9
+      Layers:
+        - !Ref AwsUtilsLayer
       Policies:
         - S3ReadPolicy:
             BucketName: !Ref RawMediaBucketName
@@ -65,6 +81,8 @@ Resources:
       CodeUri: src/lambdas/media_processing_dispatcher/
       Handler: app.lambda_handler
       Runtime: python3.9
+      Layers:
+        - !Ref AwsUtilsLayer
       Policies:
         - S3ReadPolicy:
             BucketName: !Ref RawMediaBucketName
@@ -173,6 +191,8 @@ Resources:
       CodeUri: src/lambdas/upload_media_function/
       Handler: app.lambda_handler
       Runtime: python3.9
+      Layers:
+        - !Ref AwsUtilsLayer
       Policies:
         - S3CrudPolicy:
             BucketName: !Ref RawMediaBucket
@@ -191,6 +211,8 @@ Resources:
       CodeUri: src/lambdas/retrieve_media_function/
       Handler: app.lambda_handler
       Runtime: python3.9
+      Layers:
+        - !Ref AwsUtilsLayer
       Policies:
         - S3ReadPolicy:
             BucketName: !Ref ProcessedMediaBucket
