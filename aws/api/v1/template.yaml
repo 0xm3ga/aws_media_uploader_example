@@ -121,6 +121,11 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Ref ProcessedMediaBucketName
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteAfter30Days
+            Status: Enabled
+            ExpirationInDays: 30
 
   # API Gateway
   MediaApi:
