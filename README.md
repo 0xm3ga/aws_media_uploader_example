@@ -4,16 +4,68 @@
 
 This application has several components:
 
-- Three AWS S3 buckets for storing raw and processed media files.
-- Five AWS Lambda functions responsible for media upload, dispatching, processing, and retrieving.
-- AWS Certificate Manager to handle SSL for the custom domain.
-- Amazon API Gateway to handle incoming requests.
-- AWS Route53 for DNS configuration.
-- AWS Cognito User Pools for user management.
+### Cognito
 
-Below is a quick overview of the AWS infrastructure for hosting a React website on S3. The diagram summarizes the architecture.
+1. **Parameters**: `RawMediaBucketName` and `ProcessedMediaBucketName` representing S3 buckets for raw and processed media.
 
-![AWS Architecture](docs/aws-architecture.png)
+2. **Cognito User Pool (MainUserPool)**: User pool with SMS verification and a relaxed password policy. An IAM role (`SMSRole`) is created for Cognito to send SMS.
+
+3. **Cognito User Pool Client (MainUserPoolClient)**: User Pool Client using SRP protocol for authentication and allowing refresh tokens.
+
+4. **Cognito Identity Pool (MainIdentityPool)**: Identity Pool providing AWS credentials to users (authenticated and unauthenticated), integrated with the User Pool and User Pool Client.
+
+5. **IAM Roles**: `AuthenticatedRole` grants write access to the raw media bucket and read access to the processed media bucket. `UnauthenticatedRole` provides read access to the processed media bucket.
+
+6. **Cognito Identity Pool Role Attachment**: Associates IAM roles with the Cognito Identity Pool based on the user's authentication status.
+
+7. **Outputs**: Outputs the User Pool ID and ARN.
+
+![Cognito Architecture](docs/cognito-architecture.png)
+
+### CloudFront
+
+1. **Parameters**: The template accepts parameters such as `MediaApiId`, `MediaApiStage`, `MediaDomainName`, and `RootHostedZone`. These are used to tailor the resources within the template like the API Gateway, CloudFront Distribution, and Route53 record set.
+
+2. **Certificates (MediaCertificate)**: An AWS Certificate Manager (ACM) SSL certificate is generated using the domain name given in the `MediaDomainName` parameter, employing DNS validation.
+
+3. **CloudFront Distribution (MediaCloudFrontDistribution)**: A CloudFront distribution is provisioned to act as a content delivery network (CDN) for the application. It is configured with the domain name from the parameters and integrates with the API Gateway specified by the `MediaApiId` and `MediaApiStage` parameters. The distribution supports secure HTTPS connections only and utilizes HTTP2.
+
+   The distribution is configured with a custom viewer certificate from ACM (`MediaCertificate`) to cater to HTTPS requests. The viewer protocol policy is set to "redirect-to-https", which ensures all incoming HTTP requests are redirected to HTTPS.
+
+   The default cache behavior of the CloudFront distribution allows GET, HEAD, and OPTIONS methods, forwards all query strings, and doesn't forward cookies.
+
+4. **Route53 Record Set (MediaApiRecordSet)**: A DNS record set is created in the provided `RootHostedZone` which associates the domain name with the CloudFront distribution. This enables the application to be accessed using the custom domain name.
+
+![CloudFront Architecture](docs/cloud-front-architecture.png)
+
+### API and S3 Buckets
+
+1. **Parameters**: `RawMediaBucketName`, `ProcessedMediaBucketName`, `MainUserPoolId`, and `MainUserPoolArn`.
+
+2. **Lambda Layer (AwsUtilsLayer)**: A reusable layer for common AWS utilities, compatible with Python 3.9.
+
+3. **Lambda Functions**:
+
+   - **ImageProcessingFunction**: Processes images, with read access to raw media and CRUD access to processed media.
+   - **VideoProcessingFunction**: Processes videos, with the same access as above.
+   - **MediaProcessingDispatcher**: Dispatches media processing tasks to the correct function based on the media type, with the same access as above.
+   - **UploadMediaFunction**: Handles media uploads, with CRUD access to the raw media bucket.
+   - **RetrieveMediaFunction**: Retrieves processed media, with read access to the processed media bucket and basic Lambda execution permissions.
+
+4. **Lambda Permissions (RawMediaBucketEventPermission)**: Allows the MediaProcessingDispatcher function to be triggered by events in the raw media bucket.
+
+5. **S3 Buckets**:
+
+   - **RawMediaBucket**: Stores raw media, triggers the MediaProcessingDispatcher function on object creation.
+   - **ProcessedMediaBucket**: Stores processed media, automatically deletes objects after 30 days.
+
+6. **API Gateway (MediaApi)**: Serves as the public endpoint for uploading and retrieving media, using the MainCognitoAuthorizer for authentication.
+
+7. **Outputs**: Outputs the Media API ID and Stage.
+
+The diagram summarizes the architecture.
+
+![API Architecture](docs/api-architecture.png)
 
 ### Requirements
 
