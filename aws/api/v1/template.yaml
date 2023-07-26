@@ -3,14 +3,6 @@ Transform: AWS::Serverless-2016-10-31
 Description: An AWS Serverless application that receives and stores user-uploaded images and videos.
 
 Parameters:
-  MediaDomainName:
-    Type: String
-    Description: Media custom domain name
-
-  RootHostedZone:
-    Type: String
-    Description: Root Hosted Zone
-
   RawMediaBucketName:
     Type: String
     Description: Media bucket name
@@ -106,22 +98,6 @@ Resources:
       SourceArn: !Sub "arn:aws:s3:::${RawMediaBucketName}"
       Principal: s3.amazonaws.com
 
-  # Certificates
-  MediaCertificate:
-    Type: AWS::CertificateManager::Certificate
-    Properties:
-      DomainName: !Ref MediaDomainName
-      ValidationMethod: DNS
-
-  # Custom domains
-  MediaDomain:
-    Type: AWS::ApiGateway::DomainName
-    DependsOn:
-      - MediaCertificate
-    Properties:
-      DomainName: !Ref MediaDomainName
-      CertificateArn: !Ref MediaCertificate
-
   # Buckets
   RawMediaBucket:
     Type: AWS::S3::Bucket
@@ -149,6 +125,8 @@ Resources:
   MediaApi:
     Type: AWS::Serverless::Api
     Properties:
+      EndpointConfiguration:
+        Type: REGIONAL
       StageName: Prod
       BinaryMediaTypes:
         - "*/*"
@@ -162,29 +140,6 @@ Resources:
         Authorizers:
           MainCognitoAuthorizer:
             UserPoolArn: !Ref MainUserPoolArn
-
-  # API mappings
-  MediaApiBasePathMapping:
-    Type: AWS::ApiGateway::BasePathMapping
-    DependsOn:
-      - MediaApi
-      - MediaDomain
-    Properties:
-      BasePath: v1
-      DomainName: !Ref MediaDomain
-      RestApiId: !Ref MediaApi
-      Stage: !Ref MediaApi.Stage
-
-  MediaApiRecordSet:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId: !Ref RootHostedZone
-      Name: !Ref MediaDomainName
-      Type: A
-      AliasTarget:
-        DNSName: !GetAtt MediaDomain.DistributionDomainName
-        HostedZoneId: Z2FDTNDATAQYW2
-        EvaluateTargetHealth: false
 
   # Lambda
   UploadMediaFunction:
