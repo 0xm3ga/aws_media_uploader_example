@@ -9,7 +9,10 @@ info:
 servers:
   - url: https://media.bluecollarverse.com/v1
 paths:
-  /{filename}:
-    $ref: "paths/root.yaml"
+  /media/{filename}:
+    $ref: "paths/media.yaml"
   /upload:
     $ref: "paths/upload.yaml"
+components:
+  securitySchemes:
+    $ref: "components/schemas/securitySchemes.yaml"

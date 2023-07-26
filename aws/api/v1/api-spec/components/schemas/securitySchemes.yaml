@@ -1,0 +1,7 @@
+MainCognitoAuthorizer:
+  type: oauth2
+  flows:
+    authorizationCode: #or implicit, depending on your setup
+      authorizationUrl: https://<your-cognito-domain>/oauth2/authorize
+      tokenUrl: https://<your-cognito-domain>/oauth2/token
+      scopes: {}

@@ -54,8 +54,11 @@ get:
         application/json:
           schema:
             $ref: "../components/schemas/error.yaml"
+  security:
+    []
+    # - NONE: []
   x-amazon-apigateway-integration:
-    httpMethod: GET
+    httpMethod: POST
     type: aws_proxy
     uri:
       Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RetrieveMediaFunction.Arn}/invocations

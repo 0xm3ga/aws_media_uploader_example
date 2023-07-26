@@ -1,23 +1,23 @@
 type: object
 properties:
-  url:
-    type: string
-    description: URL where the uploaded file can be accessed.
-  id:
-    type: string
-    description: Unique identifier for the uploaded file.
-  fileName:
-    type: string
-    description: The original name of the uploaded file.
-  fileSize:
+  statusCode:
     type: integer
-    description: The size of the uploaded file in bytes.
-  fileType:
+    description: The HTTP status code of the response.
+  headers:
+    type: object
+    description: Headers to provide with the HTTP response.
+    properties:
+      Content-Type:
+        type: string
+        description: The MIME type of the response body.
+  body:
     type: string
-    description: The type of the uploaded file.
+    description: The base64-encoded image.
+  isBase64Encoded:
+    type: boolean
+    description: Whether or not the body is base64-encoded.
 required:
-  - url
-  - id
-  - fileName
-  - fileSize
-  - fileType
+  - statusCode
+  - headers
+  - body
+  - isBase64Encoded

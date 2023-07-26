@@ -150,6 +150,8 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       StageName: Prod
+      BinaryMediaTypes:
+        - "*/*"
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
@@ -216,13 +218,18 @@ Resources:
       Policies:
         - S3ReadPolicy:
             BucketName: !Ref ProcessedMediaBucket
+        - AWSLambdaBasicExecutionRole
+      Environment:
+        Variables:
+          PROCESSED_MEDIA_BUCKET: !Ref ProcessedMediaBucket
       Events:
-        Upload:
+        RetrieveMedia:
           Type: Api
           Properties:
-            Path: /{filename}
+            Path: /media/{filename}
             Method: get
-            RestApiId: !Ref MediaApi
+            RestApiId:
+              Ref: MediaApi
             Auth:
               Authorizer: NONE
 
