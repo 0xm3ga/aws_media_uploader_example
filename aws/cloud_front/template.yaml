@@ -1,0 +1,77 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Cloud Front infra
+
+Parameters:
+  MediaApiId:
+    Type: String
+    Description: Media Api Id
+
+  MediaApiStage:
+    Type: String
+    Description: Media Api Stage
+
+  MediaDomainName:
+    Type: String
+    Description: Media domain name
+
+  RootHostedZone:
+    Type: String
+    Description: Root Hosted Zone
+
+Resources:
+  # Certificates
+  MediaCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref MediaDomainName
+      ValidationMethod: DNS
+
+  # Cloud Front
+  MediaCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Aliases:
+          - !Ref MediaDomainName
+        Origins:
+          - DomainName: !Sub "${MediaApiId}.execute-api.${AWS::Region}.amazonaws.com"
+            OriginPath: !Sub "/${MediaApiStage}"
+            Id: MediaApiId
+            CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginProtocolPolicy: "https-only"
+        Enabled: true
+        # DefaultRootObject: "index.html"
+        DefaultCacheBehavior:
+          TargetOriginId: MediaApiId
+          ViewerProtocolPolicy: "redirect-to-https"
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          ForwardedValues:
+            QueryString: true
+            Cookies:
+              Forward: "none"
+        ViewerCertificate:
+          AcmCertificateArn: !Ref MediaCertificate
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021
+        HttpVersion: "http2"
+
+  # Record Set
+  MediaApiRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref RootHostedZone
+      Name: !Ref MediaDomainName
+      Type: A
+      AliasTarget:
+        HostedZoneId: Z2FDTNDATAQYW2 # CloudFront Hosted Zone ID
+        DNSName: !GetAtt MediaCloudFrontDistribution.DomainName

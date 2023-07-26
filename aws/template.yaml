@@ -35,15 +35,16 @@ Resources:
         RawMediaBucketName: !Sub ${MediaBucketName}-raw
         ProcessedMediaBucketName: !Sub ${MediaBucketName}-processed
 
-  # Default API base path mapping
-  DefaultApiBasePathMapping:
-    Type: AWS::ApiGateway::BasePathMapping
-    DependsOn:
-      - ApiV1Stack
+  # Cloud Front stack
+  CloudFrontStack:
+    Type: AWS::Serverless::Application
     Properties:
-      DomainName: !Ref MediaDomainName
-      RestApiId: !GetAtt ApiV1Stack.Outputs.MediaApiIdOutput
-      Stage: !GetAtt ApiV1Stack.Outputs.MediaApiStageOutput
+      Location: ./cloud_front/template.yaml
+      Parameters:
+        MediaApiId: !GetAtt ApiV1Stack.Outputs.MediaApiIdOutput
+        MediaApiStage: !GetAtt ApiV1Stack.Outputs.MediaApiStageOutput
+        MediaDomainName: !Ref MediaDomainName
+        RootHostedZone: !Ref RootHostedZone
 
   # API stacks
   ApiV1Stack:
@@ -51,10 +52,8 @@ Resources:
     Properties:
       Location: ./api/v1/template.yaml
       Parameters:
-        MediaDomainName: !Ref MediaDomainName
         RawMediaBucketName: !Sub ${MediaBucketName}-raw
         ProcessedMediaBucketName: !Sub ${MediaBucketName}-processed
-        RootHostedZone: !Ref RootHostedZone
         MainUserPoolId: !GetAtt CognitoStack.Outputs.MainUserPoolIdOutput
         MainUserPoolArn: !GetAtt CognitoStack.Outputs.MainUserPoolArnOutput
 # DocsDomainName: !Ref DocsDomainName
