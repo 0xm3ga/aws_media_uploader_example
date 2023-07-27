@@ -27,7 +27,7 @@
           "arn": "arn:aws:s3:::example-bucket"
         },
         "object": {
-          "key": "+447542848712/images/237b1c9d-9787-40b9-a491-3ea9d7c4512a",
+          "key": "+447542848712/videos/86044f2e-e725-42ce-9fef-1d5d18404144",
           "size": 1024,
           "eTag": "0123456789abcdef0123456789abcdef",
           "sequencer": "0A1B2C3D4E5F678901"
