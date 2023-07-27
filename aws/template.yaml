@@ -35,20 +35,20 @@ Resources:
         RawMediaBucketName: !Sub ${MediaBucketName}-raw
         ProcessedMediaBucketName: !Sub ${MediaBucketName}-processed
 
-  # Cloud Front stack
-  CloudFrontStack:
+  # S3 stack
+  S3Stack:
     Type: AWS::Serverless::Application
     Properties:
-      Location: ./cloud_front/template.yaml
+      Location: ./s3/template.yaml
       Parameters:
-        MediaApiId: !GetAtt ApiV1Stack.Outputs.MediaApiIdOutput
-        MediaApiStage: !GetAtt ApiV1Stack.Outputs.MediaApiStageOutput
-        MediaDomainName: !Ref MediaDomainName
-        RootHostedZone: !Ref RootHostedZone
+        RawMediaBucketName: !Sub ${MediaBucketName}-raw
+        ProcessedMediaBucketName: !Sub ${MediaBucketName}-processed
 
   # API stacks
   ApiV1Stack:
     Type: AWS::Serverless::Application
+    DependsOn:
+      - S3Stack
     Properties:
       Location: ./api/v1/template.yaml
       Parameters:
@@ -56,6 +56,19 @@ Resources:
         ProcessedMediaBucketName: !Sub ${MediaBucketName}-processed
         MainUserPoolId: !GetAtt CognitoStack.Outputs.MainUserPoolIdOutput
         MainUserPoolArn: !GetAtt CognitoStack.Outputs.MainUserPoolArnOutput
+
+  # Cloud Front stack
+  CloudFrontStack:
+    Type: AWS::Serverless::Application
+    DependsOn:
+      - ApiV1Stack
+    Properties:
+      Location: ./cloud_front/template.yaml
+      Parameters:
+        MediaApiId: !GetAtt ApiV1Stack.Outputs.MediaApiIdOutput
+        MediaApiStage: !GetAtt ApiV1Stack.Outputs.MediaApiStageOutput
+        MediaDomainName: !Ref MediaDomainName
+        RootHostedZone: !Ref RootHostedZone
 # DocsDomainName: !Ref DocsDomainName
 #   # Docs stacks
 #   DocsStack:

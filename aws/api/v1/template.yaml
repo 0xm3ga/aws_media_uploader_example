@@ -24,7 +24,7 @@ Resources:
   AwsUtilsLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
-      LayerName: AwsUtilsLayer
+      LayerName: AwsUtilsLayer-API
       Description: Layer that contains common aws utils (like boto3)
       ContentUri: src/layers/aws_utils_layer/
       CompatibleRuntimes:
@@ -33,93 +33,93 @@ Resources:
       BuildMethod: python3.9
 
   # Lambda
-  ImageProcessingFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/lambdas/image_processing_function/
-      Handler: app.lambda_handler
-      Runtime: python3.9
-      Layers:
-        - !Ref AwsUtilsLayer
-      Policies:
-        - S3ReadPolicy:
-            BucketName: !Ref RawMediaBucketName
-        - S3CrudPolicy:
-            BucketName: !Ref ProcessedMediaBucketName
-      Environment:
-        Variables:
-          PROCESSED_MEDIA_BUCKET: !Ref ProcessedMediaBucketName
+  # ImageProcessingFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     CodeUri: src/lambdas/image_processing_function/
+  #     Handler: app.lambda_handler
+  #     Runtime: python3.9
+  #     Layers:
+  #       - !Ref AwsUtilsLayer
+  #     Policies:
+  #       - S3ReadPolicy:
+  #           BucketName: !Ref RawMediaBucketName
+  #       - S3CrudPolicy:
+  #           BucketName: !Ref ProcessedMediaBucketName
+  #     Environment:
+  #       Variables:
+  #         PROCESSED_MEDIA_BUCKET: !Ref ProcessedMediaBucketName
 
-  VideoProcessingFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/lambdas/video_processing_function/
-      Handler: app.lambda_handler
-      Runtime: python3.9
-      Layers:
-        - !Ref AwsUtilsLayer
-      Policies:
-        - S3ReadPolicy:
-            BucketName: !Ref RawMediaBucketName
-        - S3CrudPolicy:
-            BucketName: !Ref ProcessedMediaBucketName
-      Environment:
-        Variables:
-          PROCESSED_MEDIA_BUCKET: !Ref ProcessedMediaBucketName
+  # VideoProcessingFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     CodeUri: src/lambdas/video_processing_function/
+  #     Handler: app.lambda_handler
+  #     Runtime: python3.9
+  #     Layers:
+  #       - !Ref AwsUtilsLayer
+  #     Policies:
+  #       - S3ReadPolicy:
+  #           BucketName: !Ref RawMediaBucketName
+  #       - S3CrudPolicy:
+  #           BucketName: !Ref ProcessedMediaBucketName
+  #     Environment:
+  #       Variables:
+  #         PROCESSED_MEDIA_BUCKET: !Ref ProcessedMediaBucketName
 
-  MediaProcessingDispatcher:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/lambdas/media_processing_dispatcher/
-      Handler: app.lambda_handler
-      Runtime: python3.9
-      Layers:
-        - !Ref AwsUtilsLayer
-      Policies:
-        - S3ReadPolicy:
-            BucketName: !Ref RawMediaBucketName
-        - S3CrudPolicy:
-            BucketName: !Ref ProcessedMediaBucketName
-      Environment:
-        Variables:
-          IMAGE_PROCESSING_FUNCTION_NAME: !Ref ImageProcessingFunction
-          VIDEO_PROCESSING_FUNCTION_NAME: !Ref VideoProcessingFunction
-          RDS_SECRET_NAME: your-rds-secret-name
+  # MediaProcessingDispatcher:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     CodeUri: src/lambdas/media_processing_dispatcher/
+  #     Handler: app.lambda_handler
+  #     Runtime: python3.9
+  #     Layers:
+  #       - !Ref AwsUtilsLayer
+  #     Policies:
+  #       - S3ReadPolicy:
+  #           BucketName: !Ref RawMediaBucketName
+  #       - S3CrudPolicy:
+  #           BucketName: !Ref ProcessedMediaBucketName
+  #     Environment:
+  #       Variables:
+  #         IMAGE_PROCESSING_FUNCTION_NAME: !Ref ImageProcessingFunction
+  #         VIDEO_PROCESSING_FUNCTION_NAME: !Ref VideoProcessingFunction
+  #         RDS_SECRET_NAME: your-rds-secret-name
 
-  # Permissions
-  RawMediaBucketEventPermission:
-    Type: AWS::Lambda::Permission
-    DependsOn:
-      - MediaProcessingDispatcher
-    Properties:
-      Action: lambda:invokeFunction
-      SourceAccount: !Ref AWS::AccountId
-      FunctionName: !Ref MediaProcessingDispatcher
-      SourceArn: !Sub "arn:aws:s3:::${RawMediaBucketName}"
-      Principal: s3.amazonaws.com
+  # # Permissions
+  # RawMediaBucketEventPermission:
+  #   Type: AWS::Lambda::Permission
+  #   DependsOn:
+  #     - MediaProcessingDispatcher
+  #   Properties:
+  #     Action: lambda:invokeFunction
+  #     SourceAccount: !Ref AWS::AccountId
+  #     FunctionName: !Ref MediaProcessingDispatcher
+  #     SourceArn: !Sub "arn:aws:s3:::${RawMediaBucketName}"
+  #     Principal: s3.amazonaws.com
 
-  # Buckets
-  RawMediaBucket:
-    Type: AWS::S3::Bucket
-    DependsOn:
-      - MediaProcessingDispatcher
-      - RawMediaBucketEventPermission
-    Properties:
-      BucketName: !Ref RawMediaBucketName
-      NotificationConfiguration:
-        LambdaConfigurations:
-          - Function: !GetAtt MediaProcessingDispatcher.Arn
-            Event: s3:ObjectCreated:*
+  # # Buckets
+  # RawMediaBucket:
+  #   Type: AWS::S3::Bucket
+  #   DependsOn:
+  #     - MediaProcessingDispatcher
+  #     - RawMediaBucketEventPermission
+  #   Properties:
+  #     BucketName: !Ref RawMediaBucketName
+  #     NotificationConfiguration:
+  #       LambdaConfigurations:
+  #         - Function: !GetAtt MediaProcessingDispatcher.Arn
+  #           Event: s3:ObjectCreated:*
 
-  ProcessedMediaBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Ref ProcessedMediaBucketName
-      LifecycleConfiguration:
-        Rules:
-          - Id: DeleteAfter30Days
-            Status: Enabled
-            ExpirationInDays: 30
+  # ProcessedMediaBucket:
+  #   Type: AWS::S3::Bucket
+  #   Properties:
+  #     BucketName: !Ref ProcessedMediaBucketName
+  #     LifecycleConfiguration:
+  #       Rules:
+  #         - Id: DeleteAfter30Days
+  #           Status: Enabled
+  #           ExpirationInDays: 30
 
   # API Gateway
   MediaApi:
@@ -152,10 +152,10 @@ Resources:
         - !Ref AwsUtilsLayer
       Policies:
         - S3CrudPolicy:
-            BucketName: !Ref RawMediaBucket
+            BucketName: !Ref RawMediaBucketName
       Environment:
         Variables:
-          RAW_MEDIA_BUCKET: !Ref RawMediaBucket
+          RAW_MEDIA_BUCKET: !Ref RawMediaBucketName
       Events:
         Upload:
           Type: Api
@@ -175,11 +175,11 @@ Resources:
         - !Ref AwsUtilsLayer
       Policies:
         - S3ReadPolicy:
-            BucketName: !Ref ProcessedMediaBucket
+            BucketName: !Ref ProcessedMediaBucketName
         - AWSLambdaBasicExecutionRole
       Environment:
         Variables:
-          PROCESSED_MEDIA_BUCKET: !Ref ProcessedMediaBucket
+          PROCESSED_MEDIA_BUCKET: !Ref ProcessedMediaBucketName
       Events:
         RetrieveMedia:
           Type: Api

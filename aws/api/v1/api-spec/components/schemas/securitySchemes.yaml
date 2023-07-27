@@ -5,3 +5,7 @@ MainCognitoAuthorizer:
       authorizationUrl: https://<your-cognito-domain>/oauth2/authorize
       tokenUrl: https://<your-cognito-domain>/oauth2/token
       scopes: {}
+NONE: # needed by AWS to override default authorizer to NONE
+  type: apiKey
+  name: none
+  in: header
