@@ -51,6 +51,10 @@ Resources:
             - GET
             - HEAD
             - OPTIONS
+            - POST
+            - DELETE
+            - PUT
+            - PATCH
           CachedMethods:
             - GET
             - HEAD

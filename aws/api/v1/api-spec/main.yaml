@@ -7,7 +7,7 @@ info:
     name: MIT
     url: https://opensource.org/licenses/MIT
 servers:
-  - url: https://media.bluecollarverse.com/v1
+  - url: https://media.bluecollarverse.com
 paths:
   /media/{filename}:
     $ref: "paths/media.yaml"

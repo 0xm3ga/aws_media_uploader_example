@@ -7,7 +7,7 @@ info:
     name: MIT
     url: https://opensource.org/licenses/MIT
 servers:
-  - url: https://media.bluecollarverse.com/v1
+  - url: https://media.bluecollarverse.com
 paths:
   /media/{filename}:
     get:
@@ -30,60 +30,104 @@ paths:
             type: string
           description: Optional size of the media to retrieve
       responses:
-        "200":
+        '200':
           description: Media successfully retrieved.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/mediaRetrieveResponse"
-        "400":
+                $ref: '#/components/schemas/mediaRetrieveResponse'
+        '400':
           description: Bad Request, usually due to invalid parameters.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/error"
-        "404":
+                $ref: '#/components/schemas/error'
+        '404':
           description: File not found.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/error"
-        "500":
+                $ref: '#/components/schemas/error'
+        '500':
           description: An unexpected error occurred.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/error"
-        "503":
+                $ref: '#/components/schemas/error'
+        '503':
           description: External service unavailable or request rejected.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/error"
-        "504":
+                $ref: '#/components/schemas/error'
+        '504':
           description: Request to external service timed out.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/error"
-      security:
-        - NONE: []
+                $ref: '#/components/schemas/error'
+      security: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
         uri:
           Fn::Sub: >-
             arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RetrieveMediaFunction.Arn}/invocations
+  /upload:
+    post:
+      tags:
+        - Media
+      summary: Uploads media into S3
+      description: Uploads media (photos and video) into an S3 bucket
+      operationId: mediaUpload
+      requestBody:
+        $ref: '#/components/requestBodies/uploadRequestBody'
+      responses:
+        '201':
+          description: Media successfully uploaded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mediaUploadResponse'
+        '400':
+          description: Bad Request, usually due to invalid event data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: An unexpected error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '503':
+          description: External service unavailable or request rejected.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '504':
+          description: Request to external service timed out.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        type: aws_proxy
+        uri:
+          Fn::Sub: >-
+            arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UploadMediaFunction.Arn}/invocations
 components:
   securitySchemes:
-    NONE:
-      type: apiKey
-      name: none
-      in: header
-    ApiKeyAuth:
-      type: apiKey
-      in: header
-      name: X-API-Key
+    MainCognitoAuthorizer:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://<your-cognito-domain>/oauth2/authorize
+          tokenUrl: https://<your-cognito-domain>/oauth2/token
+          scopes: {}
   schemas:
     mediaRetrieveResponse:
       type: object
@@ -120,3 +164,38 @@ components:
           type: string
           description: A human-readable message providing more details about the error.
           example: Internal service error.
+    mediaUploadResponse:
+      type: object
+      properties:
+        url:
+          type: string
+          description: URL where the uploaded file can be accessed.
+        id:
+          type: string
+          description: Unique identifier for the uploaded file.
+        fileName:
+          type: string
+          description: The original name of the uploaded file.
+        fileSize:
+          type: integer
+          description: The size of the uploaded file in bytes.
+        fileType:
+          type: string
+          description: The type of the uploaded file.
+      required:
+        - url
+        - id
+        - fileName
+        - fileSize
+        - fileType
+  requestBodies:
+    uploadRequestBody:
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              file:
+                type: string
+                format: binary
+      required: true

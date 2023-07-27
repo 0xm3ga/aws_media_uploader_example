@@ -153,6 +153,9 @@ Resources:
       Policies:
         - S3CrudPolicy:
             BucketName: !Ref RawMediaBucket
+      Environment:
+        Variables:
+          RAW_MEDIA_BUCKET: !Ref RawMediaBucket
       Events:
         Upload:
           Type: Api
