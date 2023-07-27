@@ -31,6 +31,7 @@ Resources:
       CodeUri: src/lambdas/image_processing_function/
       Handler: app.lambda_handler
       Runtime: python3.9
+      Timeout: 60
       Layers:
         - !Ref AwsUtilsLayer
       Policies:
@@ -48,6 +49,7 @@ Resources:
       CodeUri: src/lambdas/video_processing_function/
       Handler: app.lambda_handler
       Runtime: python3.9
+      Timeout: 60
       Layers:
         - !Ref AwsUtilsLayer
       Policies:
@@ -72,6 +74,14 @@ Resources:
             BucketName: !Ref RawMediaBucketName
         - S3CrudPolicy:
             BucketName: !Ref ProcessedMediaBucketName
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Action:
+                - "lambda:InvokeFunction"
+              Resource:
+                - !GetAtt ImageProcessingFunction.Arn
+                - !GetAtt VideoProcessingFunction.Arn
       Environment:
         Variables:
           IMAGE_PROCESSING_FUNCTION_ARN: !GetAtt ImageProcessingFunction.Arn
