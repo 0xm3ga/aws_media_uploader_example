@@ -55,8 +55,7 @@ get:
           schema:
             $ref: "../components/schemas/error.yaml"
   security:
-    []
-    # - NONE: []
+    - NONE: []
   x-amazon-apigateway-integration:
     httpMethod: POST
     type: aws_proxy
