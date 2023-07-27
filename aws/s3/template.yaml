@@ -74,9 +74,8 @@ Resources:
             BucketName: !Ref ProcessedMediaBucketName
       Environment:
         Variables:
-          IMAGE_PROCESSING_FUNCTION_NAME: !Ref ImageProcessingFunction
-          VIDEO_PROCESSING_FUNCTION_NAME: !Ref VideoProcessingFunction
-          RDS_SECRET_NAME: your-rds-secret-name
+          IMAGE_PROCESSING_FUNCTION_ARN: !GetAtt ImageProcessingFunction.Arn
+          VIDEO_PROCESSING_FUNCTION_ARN: !GetAtt VideoProcessingFunction.Arn
 
   # Permissions
   RawMediaBucketEventPermission:
