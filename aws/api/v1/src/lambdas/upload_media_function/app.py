@@ -14,7 +14,7 @@ def lambda_handler(event, context):
     # Get the user's username from the request context
     username = event["requestContext"]["authorizer"]["claims"]["cognito:username"]
 
-    # Get the file type from the event
+    # Get the file type from the event.
     file_type = event["queryStringParameters"]["type"]
 
     # Based on the type define the path prefix

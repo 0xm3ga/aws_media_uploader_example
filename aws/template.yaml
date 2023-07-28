@@ -3,14 +3,18 @@ Transform: AWS::Serverless-2016-10-31
 Description: An AWS Serverless Specification template describing infra for APIs and their documentation (using S3-hosted Swagger UI).
 
 Parameters:
-  MediaDomainName:
-    Type: String
-    Description: Domain name to be used for the API.
-    Default: media.<my.domain.com>
   RootHostedZone:
     Type: String
     Description: Root Hosted Zone
     Default: <hosted zone id>
+  PbsDomainName:
+    Type: String
+    Description: Domain name to be used for the API.
+    Default: pbs.<my.domain.com>
+  MediaDomainName:
+    Type: String
+    Description: Domain name to be used for the API.
+    Default: media.<my.domain.com>
   MediaBucketName:
     Type: String
     Description: Media bucket name
@@ -41,6 +45,8 @@ Resources:
     Properties:
       Location: ./s3/template.yaml
       Parameters:
+        RootHostedZone: !Ref RootHostedZone
+        MediaDomainName: !Ref MediaDomainName
         RawMediaBucketName: !Sub ${MediaBucketName}-raw
         ProcessedMediaBucketName: !Sub ${MediaBucketName}-processed
 
@@ -56,18 +62,19 @@ Resources:
         ProcessedMediaBucketName: !Sub ${MediaBucketName}-processed
         MainUserPoolId: !GetAtt CognitoStack.Outputs.MainUserPoolIdOutput
         MainUserPoolArn: !GetAtt CognitoStack.Outputs.MainUserPoolArnOutput
+        MediaDomainName: !Ref MediaDomainName
 
   # Cloud Front stack
-  CloudFrontStack:
+  PbsCloudFrontStack:
     Type: AWS::Serverless::Application
     DependsOn:
       - ApiV1Stack
     Properties:
       Location: ./cloud_front/template.yaml
       Parameters:
-        MediaApiId: !GetAtt ApiV1Stack.Outputs.MediaApiIdOutput
-        MediaApiStage: !GetAtt ApiV1Stack.Outputs.MediaApiStageOutput
-        MediaDomainName: !Ref MediaDomainName
+        PbsApiId: !GetAtt ApiV1Stack.Outputs.PbsApiIdOutput
+        PbsApiStage: !GetAtt ApiV1Stack.Outputs.PbsApiStageOutput
+        PbsDomainName: !Ref PbsDomainName
         RootHostedZone: !Ref RootHostedZone
 # DocsDomainName: !Ref DocsDomainName
 #   # Docs stacks
