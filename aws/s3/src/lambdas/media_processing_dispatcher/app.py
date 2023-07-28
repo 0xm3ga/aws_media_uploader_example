@@ -17,6 +17,19 @@ def get_content_type(bucket_name, key):
 def lambda_handler(event, context):
     logger.info(event)
 
+    lambda_client = boto3.client("lambda")
+
+    # Trigger the RecordMediaMetadataFunction
+    metadata_function_arn = os.environ.get("RECORD_MEDIA_METADATA_FUNCTION_ARN")
+    invoke_response = lambda_client.invoke(
+        FunctionName=metadata_function_arn,
+        InvocationType="Event",
+        Payload=json.dumps(event),
+    )
+
+    # Log Lambda invocation response
+    logger.info(f"RecordMediaMetadataFunction invoked with response: {invoke_response}")
+
     # Get bucket name and file key from the S3 event
     bucket = event["Records"][0]["s3"]["bucket"]["name"]
     key = event["Records"][0]["s3"]["object"]["key"]
@@ -40,7 +53,6 @@ def lambda_handler(event, context):
         return
 
     # Trigger the respective Lambda function
-    lambda_client = boto3.client("lambda")
     invoke_response = lambda_client.invoke(
         FunctionName=function_arn,
         InvocationType="Event",
