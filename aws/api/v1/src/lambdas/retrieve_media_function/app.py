@@ -1,5 +1,5 @@
 # import os
-import base64
+# import base64
 
 import boto3
 from botocore.exceptions import NoCredentialsError
@@ -19,7 +19,7 @@ def lambda_handler(event, context):
         accepted_sizes = ["small", "medium", "large"]
 
         # List of accepted formats
-        accepted_formats = ["jpg", "jpeg", "png", "gif"]
+        accepted_formats = ["jpg", "jpeg", "png", "gif", "mp4"]
 
         if size not in accepted_sizes:
             size = "medium"
@@ -34,45 +34,47 @@ def lambda_handler(event, context):
         # Construct the key
         key = f"{filename}/{size}.{extension}"
 
-        # OPTION 1
-        # # Generate signed URL
-        # url = f"https://{bucket_name}.s3.amazonaws.com/{key}"
-
-        # # Return a 302 redirect to the signed URL
-        # return {
-        #     "statusCode": 302,
-        #     "headers": {
-        #         "Location": url,
-        #     },
-        # }
-
-        # OPTION 2:
-        # Download the image from S3
-        file_object = s3.get_object(Bucket=bucket_name, Key=key)
-        file_content = file_object["Body"].read()
-
-        # Convert the image to base64
-        base64_image = base64.b64encode(file_content).decode("utf-8")
-
-        # Determine the content type for the response
-        if extension == "jpg" or extension == "jpeg":
-            content_type = "image/jpeg"
-        elif extension == "png":
-            content_type = "image/png"
-        elif extension == "gif":
-            content_type = "image/gif"
-        else:
-            content_type = "image/jpeg"
-
-        # Return the image as the response
+        # if extension == "mp4":
+        url = s3.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": bucket_name, "Key": key},
+            ExpiresIn=3600,
+        )
         return {
-            "statusCode": 200,
+            "statusCode": 302,
             "headers": {
-                "Content-Type": content_type,
+                "Location": url,
             },
-            "body": base64_image,
-            "isBase64Encoded": True,
         }
+
+        # Note: This may be a good way to serve user/entity avatars
+
+        # # Download the image from S3
+        # file_object = s3.get_object(Bucket=bucket_name, Key=key)
+        # file_content = file_object["Body"].read()
+
+        # # Convert the image to base64
+        # base64_image = base64.b64encode(file_content).decode("utf-8")
+
+        # # Determine the content type for the response
+        # if extension == "jpg" or extension == "jpeg":
+        #     content_type = "image/jpeg"
+        # elif extension == "png":
+        #     content_type = "image/png"
+        # elif extension == "gif":
+        #     content_type = "image/gif"
+        # else:
+        #     content_type = "image/jpeg"
+
+        # # Return the image as the response
+        # return {
+        #     "statusCode": 200,
+        #     "headers": {
+        #         "Content-Type": content_type,
+        #     },
+        #     "body": base64_image,
+        #     "isBase64Encoded": True,
+        # }
 
     except NoCredentialsError:
         return {"statusCode": 403, "body": "No AWS credentials found"}
