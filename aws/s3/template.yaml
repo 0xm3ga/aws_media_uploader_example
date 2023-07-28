@@ -11,6 +11,31 @@ Parameters:
     Type: String
     Description: Media bucket name
 
+  MyDatabaseName:
+    Type: String
+    Description: My Database Name
+    Default: MyDatabaseName
+
+  MyDatabaseUser:
+    Type: String
+    Description: My Database User
+    Default: MyDatabaseUser
+
+  MyDatabasePassword:
+    Type: String
+    Description: My Database Password
+    Default: MyDatabasePassword
+
+  MyDatabaseHost:
+    Type: String
+    Description: My Database Host
+    Default: MyDatabaseHost
+
+  MyDatabasePort:
+    Type: String
+    Description: My Database Port
+    Default: MyDatabasePort
+
 Resources:
   # Lambda layers
   AwsUtilsLayer:
@@ -31,6 +56,7 @@ Resources:
       CodeUri: src/lambdas/image_processing_function/
       Handler: app.lambda_handler
       Runtime: python3.9
+      Timeout: 60
       Layers:
         - !Ref AwsUtilsLayer
       Policies:
@@ -48,6 +74,7 @@ Resources:
       CodeUri: src/lambdas/video_processing_function/
       Handler: app.lambda_handler
       Runtime: python3.9
+      Timeout: 60
       Layers:
         - !Ref AwsUtilsLayer
       Policies:
@@ -72,11 +99,20 @@ Resources:
             BucketName: !Ref RawMediaBucketName
         - S3CrudPolicy:
             BucketName: !Ref ProcessedMediaBucketName
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Action:
+                - "lambda:InvokeFunction"
+              Resource:
+                - !GetAtt ImageProcessingFunction.Arn
+                - !GetAtt VideoProcessingFunction.Arn
+                - !GetAtt RecordMediaMetadataFunction.Arn
       Environment:
         Variables:
-          IMAGE_PROCESSING_FUNCTION_NAME: !Ref ImageProcessingFunction
-          VIDEO_PROCESSING_FUNCTION_NAME: !Ref VideoProcessingFunction
-          RDS_SECRET_NAME: your-rds-secret-name
+          IMAGE_PROCESSING_FUNCTION_ARN: !GetAtt ImageProcessingFunction.Arn
+          VIDEO_PROCESSING_FUNCTION_ARN: !GetAtt VideoProcessingFunction.Arn
+          RECORD_MEDIA_METADATA_FUNCTION_ARN: !GetAtt RecordMediaMetadataFunction.Arn
 
   # Permissions
   RawMediaBucketEventPermission:
@@ -90,12 +126,38 @@ Resources:
       SourceArn: !Sub "arn:aws:s3:::${RawMediaBucketName}"
       Principal: s3.amazonaws.com
 
+  RecordMediaMetadataFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/lambdas/record_media_metadata_function/
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Timeout: 60
+      Layers:
+        - !Ref AwsUtilsLayer
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - rds:DescribeDBInstances
+                - rds-data:ExecuteStatement
+                - rds-data:BatchExecuteStatement
+              Resource: "*" # Adjust to your needs
+      Environment:
+        Variables:
+          DB_NAME: !Ref MyDatabaseName
+          DB_USER: !Ref MyDatabaseUser
+          DB_PASSWORD: !Ref MyDatabasePassword
+          DB_HOST: !Ref MyDatabaseHost
+          DB_PORT: !Ref MyDatabasePort
+
   # Buckets
   RawMediaBucket:
     Type: AWS::S3::Bucket
     DependsOn:
       - MediaProcessingDispatcher
       - RawMediaBucketEventPermission
+      - RecordMediaMetadataFunction
     Properties:
       BucketName: !Ref RawMediaBucketName
       NotificationConfiguration:
