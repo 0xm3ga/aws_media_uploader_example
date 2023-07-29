@@ -19,6 +19,10 @@ Parameters:
     Type: String
     Description: Media user pool arn
 
+  MediaDomainName:
+    Type: String
+    Description: Media Domain Name
+
 Resources:
   # Lambda layers
   AwsUtilsLayer:
@@ -33,7 +37,7 @@ Resources:
       BuildMethod: python3.9
 
   # API Gateway
-  MediaApi:
+  PbsApi:
     Type: AWS::Serverless::Api
     Properties:
       EndpointConfiguration:
@@ -74,7 +78,7 @@ Resources:
             Path: /upload
             Method: post
             RestApiId:
-              Ref: MediaApi
+              Ref: PbsApi
 
   RetrieveMediaFunction:
     Type: AWS::Serverless::Function
@@ -85,12 +89,26 @@ Resources:
       Layers:
         - !Ref AwsUtilsLayer
       Policies:
-        - S3ReadPolicy:
-            BucketName: !Ref ProcessedMediaBucketName
         - AWSLambdaBasicExecutionRole
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:ListBucket
+              Resource:
+                - !Sub "arn:aws:s3:::${ProcessedMediaBucketName}"
+                - !Sub "arn:aws:s3:::${RawMediaBucketName}"
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:HeadObject
+              Resource:
+                - !Sub "arn:aws:s3:::${ProcessedMediaBucketName}/*"
+                - !Sub "arn:aws:s3:::${RawMediaBucketName}/*"
       Environment:
         Variables:
+          MEDIA_DOMAIN_NAME: !Ref MediaDomainName
           PROCESSED_MEDIA_BUCKET: !Ref ProcessedMediaBucketName
+          RAW_MEDIA_BUCKET: !Ref RawMediaBucketName
       Events:
         RetrieveMedia:
           Type: Api
@@ -98,14 +116,14 @@ Resources:
             Path: /media/{filename}
             Method: get
             RestApiId:
-              Ref: MediaApi
+              Ref: PbsApi
             Auth:
               Authorizer: NONE
 
 Outputs:
-  MediaApiIdOutput:
-    Description: Media API ID Output
-    Value: !Ref MediaApi
-  MediaApiStageOutput:
+  PbsApiIdOutput:
+    Description: Pbs API ID Output
+    Value: !Ref PbsApi
+  PbsApiStageOutput:
     Description: API Docs S3 bucket
-    Value: !Ref MediaApi.Stage
+    Value: !Ref PbsApi.Stage

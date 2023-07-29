@@ -7,7 +7,7 @@ info:
     name: MIT
     url: https://opensource.org/licenses/MIT
 servers:
-  - url: https://media.bluecollarverse.com
+  - url: https://pbs.bluecollarverse.com
 paths:
   /media/{filename}:
     get:

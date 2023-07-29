@@ -5,5 +5,5 @@ resolve_s3 = true
 s3_prefix = "aws-media-uploader-example"
 region = "us-east-1"
 capabilities = "CAPABILITY_IAM CAPABILITY_AUTO_EXPAND"
-parameter_overrides = "MediaDomainName=\"media.bluecollarverse.com\" RootHostedZone=\"Z03043642OPWWK7FLQJE6\" MediaBucketName=\"media.bluecollarverse.com\""
+parameter_overrides = "PbsDomainName=\"pbs.bluecollarverse.com\" MediaDomainName=\"media.bluecollarverse.com\" RootHostedZone=\"Z03043642OPWWK7FLQJE6\" MediaBucketName=\"media.bluecollarverse.com\""
 image_repositories = []

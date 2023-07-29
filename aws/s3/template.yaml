@@ -3,6 +3,14 @@ Transform: AWS::Serverless-2016-10-31
 Description: S3 buckets infrastructure
 
 Parameters:
+  RootHostedZone:
+    Type: String
+    Description: Root Hosted Zone
+
+  MediaDomainName:
+    Type: String
+    Description: Media domain name
+
   RawMediaBucketName:
     Type: String
     Description: Media bucket name
@@ -37,6 +45,13 @@ Parameters:
     Default: MyDatabasePort
 
 Resources:
+  # Certificates
+  PbsCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref MediaDomainName
+      ValidationMethod: DNS
+
   # Lambda layers
   AwsUtilsLayer:
     Type: AWS::Serverless::LayerVersion
@@ -174,3 +189,65 @@ Resources:
           - Id: DeleteAfter30Days
             Status: Enabled
             ExpirationInDays: 30
+
+  MediaCloudFrontOriginAccessIdentity:
+    Type: "AWS::CloudFront::CloudFrontOriginAccessIdentity"
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: Access S3 bucket content only through CloudFront
+
+  MediaCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: True
+        Aliases:
+          - !Ref MediaDomainName
+        Origins:
+          - DomainName: !GetAtt ProcessedMediaBucket.DomainName
+            Id: ProcessedMedia
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${MediaCloudFrontOriginAccessIdentity.Id}
+        DefaultCacheBehavior:
+          TargetOriginId: ProcessedMedia
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          ForwardedValues:
+            QueryString: true
+            Cookies:
+              Forward: "none"
+        ViewerCertificate:
+          AcmCertificateArn: !Ref PbsCertificate
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021
+        HttpVersion: "http2"
+
+  S3BucketPolicy:
+    Type: "AWS::S3::BucketPolicy"
+    Properties:
+      Bucket: !Ref ProcessedMediaBucket
+      PolicyDocument:
+        Statement:
+          - Action: "s3:GetObject"
+            Effect: Allow
+            Resource: !Sub "arn:aws:s3:::${ProcessedMediaBucket}/*"
+            Principal:
+              CanonicalUser: !GetAtt MediaCloudFrontOriginAccessIdentity.S3CanonicalUserId
+
+  # Record Set
+  PbsApiRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref RootHostedZone
+      Name: !Ref MediaDomainName
+      Type: A
+      AliasTarget:
+        HostedZoneId: Z2FDTNDATAQYW2 # CloudFront Hosted Zone ID
+        DNSName: !GetAtt MediaCloudFrontDistribution.DomainName

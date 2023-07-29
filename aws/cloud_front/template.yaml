@@ -1,19 +1,19 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
-Description: Cloud Front infra
+Description: Public broadcasting service (PBS) Cloud Front infra
 
 Parameters:
-  MediaApiId:
+  PbsApiId:
     Type: String
-    Description: Media Api Id
+    Description: Pbs Api Id
 
-  MediaApiStage:
+  PbsApiStage:
     Type: String
-    Description: Media Api Stage
+    Description: Pbs Api Stage
 
-  MediaDomainName:
+  PbsDomainName:
     Type: String
-    Description: Media domain name
+    Description: Pbs domain name
 
   RootHostedZone:
     Type: String
@@ -21,23 +21,23 @@ Parameters:
 
 Resources:
   # Certificates
-  MediaCertificate:
+  PbsCertificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: !Ref MediaDomainName
+      DomainName: !Ref PbsDomainName
       ValidationMethod: DNS
 
   # Cloud Front
-  MediaCloudFrontDistribution:
+  PbsCloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
     Properties:
       DistributionConfig:
         Aliases:
-          - !Ref MediaDomainName
+          - !Ref PbsDomainName
         Origins:
-          - DomainName: !Sub "${MediaApiId}.execute-api.${AWS::Region}.amazonaws.com"
-            OriginPath: !Sub "/${MediaApiStage}"
-            Id: MediaApiId
+          - DomainName: !Sub "${PbsApiId}.execute-api.${AWS::Region}.amazonaws.com"
+            OriginPath: !Sub "/${PbsApiStage}"
+            Id: PbsApiId
             CustomOriginConfig:
               HTTPPort: 80
               HTTPSPort: 443
@@ -45,7 +45,7 @@ Resources:
         Enabled: true
         # DefaultRootObject: "index.html"
         DefaultCacheBehavior:
-          TargetOriginId: MediaApiId
+          TargetOriginId: PbsApiId
           ViewerProtocolPolicy: "redirect-to-https"
           AllowedMethods:
             - GET
@@ -64,18 +64,18 @@ Resources:
             Cookies:
               Forward: "none"
         ViewerCertificate:
-          AcmCertificateArn: !Ref MediaCertificate
+          AcmCertificateArn: !Ref PbsCertificate
           SslSupportMethod: sni-only
           MinimumProtocolVersion: TLSv1.2_2021
         HttpVersion: "http2"
 
   # Record Set
-  MediaApiRecordSet:
+  PbsApiRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneId: !Ref RootHostedZone
-      Name: !Ref MediaDomainName
+      Name: !Ref PbsDomainName
       Type: A
       AliasTarget:
         HostedZoneId: Z2FDTNDATAQYW2 # CloudFront Hosted Zone ID
-        DNSName: !GetAtt MediaCloudFrontDistribution.DomainName
+        DNSName: !GetAtt PbsCloudFrontDistribution.DomainName
