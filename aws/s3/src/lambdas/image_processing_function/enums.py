@@ -29,6 +29,6 @@ class ImageSize(Enum):
 ALLOWED_IMAGE_FORMATS = set(ImageFormat.__members__.keys())
 ALLOWED_IMAGE_SIZES = set(ImageSize.__members__.keys())
 
-ALLOWED_IMAGE_EXTENSIONS = ImageFormat
+ALLOWED_IMAGE_EXTENSIONS = {image_format.value for image_format in ImageFormat}
 
-EXTENSION_MAP: Dict[str, str] = {"jpeg": "jpg"}
+EXTENSION_MAP: Dict[str, str] = {"jpg": "jpeg"}

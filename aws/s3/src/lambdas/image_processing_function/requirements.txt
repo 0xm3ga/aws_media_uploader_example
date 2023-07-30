@@ -1,1 +1,3 @@
 Pillow
+pygifsicle
+tenacity
