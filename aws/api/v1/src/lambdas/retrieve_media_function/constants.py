@@ -35,3 +35,7 @@ ALLOWED_IMAGE_DIMENSIONS = {image_format.value for image_format in ImageSize}
 ALLOWED_IMAGE_EXTENSIONS = {image_format.value for image_format in ImageFormat}
 
 EXTENSION_MAP: Dict[str, str] = {"jpg": "jpeg"}
+
+
+ACCEPTED_SIZES = ["tiny", "small", "medium", "large", "huge"]
+ACCEPTED_FORMATS = ["jpg", "jpeg", "png", "gif", "mp4"]

@@ -63,7 +63,13 @@ def lambda_handler(event, context):
     if content_type.startswith("image/"):
         # Specifying which format and what sizes to generate.
         format = ImageFormat.JPEG.name
-        sizes = [ImageSize.SMALL.name, ImageSize.MEDIUM.name, ImageSize.LARGE.name]
+        sizes = [
+            ImageSize.TINY.name,
+            ImageSize.SMALL.name,
+            ImageSize.MEDIUM.name,
+            ImageSize.LARGE.name,
+            ImageSize.HUGE.name,
+        ]
 
         lambda_client.invoke(
             FunctionName=image_processing_function_arn,

@@ -1,102 +1,45 @@
-import logging
-import os
+from http import HTTPStatus
 
-import boto3
-from botocore.exceptions import ClientError, NoCredentialsError
+from botocore.exceptions import NoCredentialsError
+from custom_types import RetrieveMediaEvent
+from environment import Environment
+from exceptions import FileProcessingError, ObjectNotFoundError, PreprocessingError
+from media_request import MediaRequest
+from utils import generate_media_url
+from validation import fetch_parameters_from_event
 
-# Set up logging
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
 
-
-def object_exists(bucket: str, key: str):
-    logger.info(f"object_exists: {bucket} {key}")
-    s3 = boto3.client("s3")
+def lambda_handler(event: RetrieveMediaEvent, context):
+    """Lambda function handler."""
     try:
-        s3.head_object(Bucket=bucket, Key=key)
-    except ClientError as e:
-        if e.response["Error"]["Code"] == "404":
-            return False
-        else:
-            raise
-    else:
-        return True
+        # env vars
+        env = Environment(["RAW_MEDIA_BUCKET", "MEDIA_DOMAIN_NAME"])
+        env.fetch_required_variables()
 
+        raw_media_bucket = env.fetch_variable("RAW_MEDIA_BUCKET")
+        media_domain_name = env.fetch_variable("MEDIA_DOMAIN_NAME")
 
-def process_media(filename: str, size: str, extension: str) -> str:
-    username = "username"
-    file_type = "videos"
+        # fetch and validate params from event
+        filename, size, extension = fetch_parameters_from_event(event)
 
-    key = f"{username}/{file_type}/{size}"
-    return key
+        # processing request
+        media_request = MediaRequest(filename, size, extension, raw_media_bucket)
+        key = media_request.process()
 
-
-def lambda_handler(event, context):
-    logger.info(event)
-    try:
-        raw_media_bucket = os.environ["RAW_MEDIA_BUCKET"]
-        processed_media_bucket = os.environ["PROCESSED_MEDIA_BUCKET"]
-        media_domain_name = os.environ["MEDIA_DOMAIN_NAME"]
-
-        filename = event["pathParameters"]["filename"]  # fetch filename from the url path parameter
-
-        queryStringParameters = event.get("queryStringParameters") or {}
-        size = queryStringParameters.get("size", "medium")
-        extension = queryStringParameters.get("extension", "jpg")
-
-        # Make sure to use jpg instead of jpeg
-        if extension == "jpeg":
-            extension = "jpg"
-
-        # List of accepted sizes
-        accepted_sizes = ["small", "medium", "large"]
-
-        # List of accepted formats
-        accepted_formats = ["jpg", "jpeg", "png", "gif", "mp4"]
-
-        if size not in accepted_sizes:
-            size = "medium"
-
-        # Check if the provided format is in the list of accepted formats
-        if extension not in accepted_formats:
-            return {"statusCode": 400, "body": f"Extension {extension} is not supported."}
-
-    except Exception as e:
-        logger.error(f"Preprocessing error: {str(e)}")
-        return {"statusCode": 500, "body": f"Preprocessing error: {str(e)}"}
-
-    try:
-        # Construct the key
-        key = f"{filename}/{size}.{extension}"
-        logger.info(key)
-
-        # Check that the object exists in processed bucket
-        if not object_exists(processed_media_bucket, key):
-            logger.info(f"Object {key} not found in processed bucket. Checking raw bucket...")
-            # Check that the original object exists in raw bucket
-            if not object_exists(raw_media_bucket, key):
-                logger.warning(f"Object {key} not found in raw bucket.")
-                return {"statusCode": 404, "body": f"Object not found: {str(key)}"}
-
-            # TODO: call processing lambda (for just the specified size and ext)
-            try:
-                key = process_media(filename, size, extension)
-            except Exception:
-                logger.error("Error processing the file.")
-                return {"statusCode": 500, "body": "Error processing the file."}
-
-        url = f"https://{media_domain_name}/{key}"
-
-        return {
-            "statusCode": 302,
-            "headers": {
-                "Location": url,
-            },
-        }
+        # construct response
+        url = generate_media_url(media_domain_name, key)
+        return {"statusCode": HTTPStatus.FOUND, "headers": {"Location": url}}
 
     except NoCredentialsError:
-        logger.error("No AWS credentials found")
-        return {"statusCode": 403, "body": "No AWS credentials found"}
+        return {"statusCode": HTTPStatus.FORBIDDEN, "body": "No AWS credentials found"}
+    except PreprocessingError as e:
+        return {"statusCode": HTTPStatus.BAD_REQUEST, "body": str(e)}
+    except ObjectNotFoundError as e:
+        return {"statusCode": HTTPStatus.NOT_FOUND, "body": str(e)}
+    except FileProcessingError:
+        return {
+            "statusCode": HTTPStatus.INTERNAL_SERVER_ERROR,
+            "body": "Error processing the file.",
+        }
     except Exception as e:
-        logger.error(str(e))
-        return {"statusCode": 500, "body": str(e)}
+        return {"statusCode": HTTPStatus.INTERNAL_SERVER_ERROR, "body": str(e)}
