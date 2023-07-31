@@ -22,7 +22,7 @@ def download_file_from_s3(s3_client: Any, bucket: str, key: str, destination: Pa
 
 
 def upload_file_to_s3(
-    s3_client: Any, file_path: str, bucket: str, key: str, content_type: str
+    s3_client: Any, file_path: Path, bucket: str, key: str, content_type: str
 ) -> None:
     """
     Uploads a file to an S3 bucket

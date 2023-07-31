@@ -63,6 +63,7 @@ Resources:
       CodeUri: src/lambdas/upload_media_function/
       Handler: app.lambda_handler
       Runtime: python3.9
+      Timeout: 10
       Layers:
         - !Ref AwsUtilsLayer
       Policies:
@@ -86,6 +87,7 @@ Resources:
       CodeUri: src/lambdas/retrieve_media_function/
       Handler: app.lambda_handler
       Runtime: python3.9
+      Timeout: 20
       Layers:
         - !Ref AwsUtilsLayer
       Policies:

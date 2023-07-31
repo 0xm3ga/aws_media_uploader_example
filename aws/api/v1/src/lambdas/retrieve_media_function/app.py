@@ -42,14 +42,14 @@ def lambda_handler(event, context):
 
         queryStringParameters = event.get("queryStringParameters") or {}
         size = queryStringParameters.get("size", "medium")
-        extension = queryStringParameters.get("extension", "jpg")
+        extension = queryStringParameters.get("extension", "jpeg")
 
-        # Make sure to use jpg instead of jpeg
-        if extension == "jpeg":
-            extension = "jpg"
+        # Make sure to use jpeg instead of jpg
+        if extension == "jpg":
+            extension = "jpeg"
 
         # List of accepted sizes
-        accepted_sizes = ["small", "medium", "large"]
+        accepted_sizes = ["tiny", "small", "medium", "large", "huge"]
 
         # List of accepted formats
         accepted_formats = ["jpg", "jpeg", "png", "gif", "mp4"]

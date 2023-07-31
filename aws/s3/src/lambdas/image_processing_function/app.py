@@ -56,15 +56,3 @@ def lambda_handler(event, context):
         return {"statusCode": HTTPStatus.INTERNAL_SERVER_ERROR, "body": "Internal Server Error"}
 
     return {"statusCode": HTTPStatus.OK, "body": "Images are being processed."}
-
-
-lambda_handler(
-    {
-        "bucket": "media.bluecollarverse.com-raw",
-        "key": "b5784a47-cb06-4712-9889-c5e68c960233/images/fa9bb410-1ee4-4bc0-9871-46d6400d68ec",
-        "filename": "fa9bb410-1ee4-4bc0-9871-46d6400d68ec",
-        "format": ImageFormat.JPEG.name,
-        "sizes": [ImageSize.SMALL.name, ImageSize.MEDIUM.name, ImageSize.LARGE.name],
-    },
-    {},
-)

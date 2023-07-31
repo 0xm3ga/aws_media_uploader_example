@@ -107,6 +107,7 @@ Resources:
       CodeUri: src/lambdas/media_processing_dispatcher/
       Handler: app.lambda_handler
       Runtime: python3.9
+      Timeout: 30
       Layers:
         - !Ref AwsUtilsLayer
       Policies:
@@ -128,18 +129,6 @@ Resources:
           IMAGE_PROCESSING_FUNCTION_ARN: !GetAtt ImageProcessingFunction.Arn
           VIDEO_PROCESSING_FUNCTION_ARN: !GetAtt VideoProcessingFunction.Arn
           RECORD_MEDIA_METADATA_FUNCTION_ARN: !GetAtt RecordMediaMetadataFunction.Arn
-
-  # Permissions
-  RawMediaBucketEventPermission:
-    Type: AWS::Lambda::Permission
-    DependsOn:
-      - MediaProcessingDispatcher
-    Properties:
-      Action: lambda:invokeFunction
-      SourceAccount: !Ref AWS::AccountId
-      FunctionName: !Ref MediaProcessingDispatcher
-      SourceArn: !Sub "arn:aws:s3:::${RawMediaBucketName}"
-      Principal: s3.amazonaws.com
 
   RecordMediaMetadataFunction:
     Type: AWS::Serverless::Function
@@ -165,6 +154,18 @@ Resources:
           DB_PASSWORD: !Ref MyDatabasePassword
           DB_HOST: !Ref MyDatabaseHost
           DB_PORT: !Ref MyDatabasePort
+
+  # Permissions
+  RawMediaBucketEventPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - MediaProcessingDispatcher
+    Properties:
+      Action: lambda:invokeFunction
+      SourceAccount: !Ref AWS::AccountId
+      FunctionName: !Ref MediaProcessingDispatcher
+      SourceArn: !Sub "arn:aws:s3:::${RawMediaBucketName}"
+      Principal: s3.amazonaws.com
 
   # Buckets
   RawMediaBucket:

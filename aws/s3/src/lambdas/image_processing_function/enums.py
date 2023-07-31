@@ -21,14 +21,17 @@ class ImageSize(Enum):
     Enum to represent allowed image sizes
     """
 
-    SMALL = (300, 300)
-    MEDIUM = (600, 600)
-    LARGE = (1200, 1200)
+    TINY = (120, 120)
+    SMALL = (270, 270)
+    MEDIUM = (540, 540)
+    LARGE = (1080, 1080)
+    HUGE = (2160, 2160)
 
 
-ALLOWED_IMAGE_FORMATS = set(ImageFormat.__members__.keys())
 ALLOWED_IMAGE_SIZES = set(ImageSize.__members__.keys())
+ALLOWED_IMAGE_FORMATS = set(ImageFormat.__members__.keys())
 
+ALLOWED_IMAGE_DIMENSIONS = {image_format.value for image_format in ImageSize}
 ALLOWED_IMAGE_EXTENSIONS = {image_format.value for image_format in ImageFormat}
 
 EXTENSION_MAP: Dict[str, str] = {"jpg": "jpeg"}
