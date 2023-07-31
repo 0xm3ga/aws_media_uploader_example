@@ -2,6 +2,11 @@ from enum import Enum
 from typing import Dict
 
 
+class FileType(Enum):
+    IMAGE = "images"
+    VIDEO = "videos"
+
+
 class ImageFormat(Enum):
     """
     Enum to represent allowed image formats
