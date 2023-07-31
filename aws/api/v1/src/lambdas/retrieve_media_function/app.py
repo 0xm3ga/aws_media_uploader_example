@@ -5,7 +5,7 @@ from custom_types import RetrieveMediaEvent
 from environment import Environment
 from exceptions import FileProcessingError, ObjectNotFoundError, PreprocessingError
 from media_request import MediaRequest
-from utils import generate_media_url
+from utils import construct_media_url
 from validation import fetch_parameters_from_event
 
 
@@ -27,7 +27,7 @@ def lambda_handler(event: RetrieveMediaEvent, context):
         key = media_request.process()
 
         # construct response
-        url = generate_media_url(media_domain_name, key)
+        url = construct_media_url(media_domain_name, key)
         return {"statusCode": HTTPStatus.FOUND, "headers": {"Location": url}}
 
     except NoCredentialsError:

@@ -1,6 +1,6 @@
 from exceptions import MediaProcessingError, ObjectNotFoundError
 from rds import fetch_media_info_from_rds
-from utils import object_exists, process_media
+from utils import construct_raw_media_key, object_exists, process_media
 from validation import normalize_extension, validate_extension, validate_size
 
 
@@ -26,7 +26,7 @@ class MediaRequest:
         return fetch_media_info_from_rds(self.filename)
 
     def _constructe_raw_media_key(self) -> str:
-        return f"{self.username}/{self.content_type}/{self.filename}"
+        return construct_raw_media_key(self.filename, self.username, self.content_type)
 
     def process(self) -> str:
         # getting raw media
