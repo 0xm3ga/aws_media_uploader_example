@@ -2,12 +2,8 @@ import logging
 import os
 from typing import List
 
-from exceptions import (
-    ENV_VAR_NOT_SET_MSG,
-    MISSING_ENV_VARS_MSG,
-    EnvironmentVariableError,
-    MissingEnvironmentVariableError,
-)
+from constants import error_messages as em
+from exceptions import EnvironmentVariableError, MissingEnvironmentVariableError
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -21,7 +17,7 @@ class Environment:
         """Fetch an environment variable."""
         var_value = os.environ.get(variable_name)
         if var_value is None:
-            logger.error(ENV_VAR_NOT_SET_MSG.format(var_name=variable_name))
+            logger.error(em.ENV_VAR_NOT_SET_MSG.format(var_name=variable_name))
             raise EnvironmentVariableError(variable_name)
         return var_value
 
@@ -32,7 +28,7 @@ class Environment:
                 self.fetch_variable(var)
             except EnvironmentVariableError:
                 missing_vars.append(var)
-                logger.error(MISSING_ENV_VARS_MSG.format(var))
+                logger.error(em.MISSING_ENV_VARS_MSG.format(var))
 
         if missing_vars:
             raise MissingEnvironmentVariableError(missing_vars)
