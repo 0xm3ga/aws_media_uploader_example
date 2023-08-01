@@ -38,6 +38,10 @@ FILE_PROCESSING_ERROR_MSG = "FileProcessingError occurred: {}"
 UNEXPECTED_ERROR_MSG = "Unexpected error occurred: {}"
 PREPROCESSING_ERROR_MSG = "Preprocessing error occurred: {}"
 INTERNAL_SERVER_ERROR_MSG = "Internal server error occurred: {}"
+# Error messages for HTTP status codes
+FORBIDDEN_ERROR_MSG = "Forbidden: access denied."
+RESOURCE_NOT_FOUND_ERROR_MSG = "Resource not found."
+UNEXPECTED_STATUS_CODE_ERROR_MSG = "Unexpected status code: {}"
 
 # Lambda
 ERROR_INVOKING_LAMBDA_MSG = "Error occurred while invoking Lambda function: {}"
@@ -47,3 +51,5 @@ ERROR_UNSUPPORTED_FILE_TYPE_MSG = "File type {} not supported. Cannot process."
 
 # Features
 FEATURE_NOT_IMPLEMENTED_ERROR_MSG = "The feature '{feature_name}' is not yet implemented."
+
+UNSUPPORTED_MIME_TYPE_ERROR_MSG = "Unsupported MIME type: {}"

@@ -5,6 +5,7 @@ from file_processing_exceptions import (  # noqa
     FeatureNotImplementedError,
     FileProcessingError,
     MediaProcessingError,
+    UnsupportedFileTypeError,
 )
 from preprocessing_exceptions import (  # noqa
     InvalidParameterError,
