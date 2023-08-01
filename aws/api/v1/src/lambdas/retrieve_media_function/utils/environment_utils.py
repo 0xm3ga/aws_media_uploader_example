@@ -2,12 +2,8 @@ import logging
 import os
 from typing import List
 
-from exceptions import (
-    ENV_VAR_NOT_SET_MSG,
-    MISSING_ENV_VARS_MSG,
-    EnvironmentVariableError,
-    MissingEnvironmentVariableError,
-)
+from constants.error_messages import ENV_VAR_NOT_SET_MSG, MISSING_ENV_VARS_MSG
+from exceptions import EnvironmentVariableError, MissingEnvironmentVariableError
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

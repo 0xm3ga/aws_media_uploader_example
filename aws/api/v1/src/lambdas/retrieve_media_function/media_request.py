@@ -1,10 +1,18 @@
-from exceptions import MediaProcessingError, ObjectNotFoundError
+from exceptions import ObjectNotFoundError
 from rds import fetch_media_info_from_rds
-from utils import construct_raw_media_key, object_exists, process_media
+from utils.media_processing import process_media
+from utils.s3_utils import construct_raw_media_key, object_exists
 from validation import normalize_extension, validate_extension, validate_size
 
 
 class MediaRequest:
+    filename: str
+    size: str
+    extension: str
+    raw_media_bucket: str
+    username: str
+    content_type: str
+
     def __init__(self, filename: str, size: str, extension: str, raw_media_bucket: str):
         self.filename = filename
         self.size = self._validate_size(size)
@@ -35,16 +43,13 @@ class MediaRequest:
             raise ObjectNotFoundError
 
         # processing
-        try:
-            key = process_media(
-                bucket=self.raw_media_bucket,
-                filename=self.filename,
-                size=self.size,
-                extension=self.extension,
-                file_type=self.content_type,
-                username=self.username,
-            )
-        except MediaProcessingError as e:
-            raise e
+        key = process_media(
+            bucket=self.raw_media_bucket,
+            filename=self.filename,
+            size=self.size,
+            extension=self.extension,
+            file_type=self.content_type,
+            username=self.username,
+        )
 
         return key

@@ -1,8 +1,7 @@
 import logging
 
-from constants import ACCEPTED_FORMATS, ACCEPTED_SIZES
-from custom_types import RetrieveMediaEvent
-from exceptions import (
+from constants.accepted_formats_and_sizes import ACCEPTED_FORMATS, ACCEPTED_SIZES
+from constants.error_messages import (
     INVALID_PARAMETER_MSG,
     MISSING_PATH_PARAM_MSG,
     MISSING_QUERY_PARAM_MSG,
@@ -10,6 +9,9 @@ from exceptions import (
     NO_QUERY_PARAMS_MSG,
     UNSUPPORTED_EXTENSION_MSG,
     UNSUPPORTED_SIZE_MSG,
+)
+from custom_types import RetrieveMediaEvent
+from exceptions import (
     InvalidParameterError,
     MissingPathParamError,
     MissingQueryParamError,

@@ -2,12 +2,8 @@ import logging
 from typing import Dict
 
 from botocore.exceptions import BotoCoreError
-from exceptions import (
-    INVALID_RDS_RESPONSE_MSG,
-    RDS_COMMUNICATION_ERROR_MSG,
-    MissingRequiredRDSVariablesError,
-    RDSCommunicationError,
-)
+from constants.error_messages import INVALID_RDS_RESPONSE_MSG, RDS_COMMUNICATION_ERROR_MSG
+from exceptions import MissingRequiredRDSVariablesError, RDSCommunicationError
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

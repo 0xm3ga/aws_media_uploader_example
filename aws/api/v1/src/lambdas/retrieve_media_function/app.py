@@ -2,10 +2,10 @@ from http import HTTPStatus
 
 from botocore.exceptions import NoCredentialsError
 from custom_types import RetrieveMediaEvent
-from environment import Environment
 from exceptions import FileProcessingError, ObjectNotFoundError, PreprocessingError
 from media_request import MediaRequest
-from utils import construct_media_url
+from utils.environment_utils import Environment
+from utils.s3_utils import construct_media_url
 from validation import fetch_parameters_from_event
 
 
