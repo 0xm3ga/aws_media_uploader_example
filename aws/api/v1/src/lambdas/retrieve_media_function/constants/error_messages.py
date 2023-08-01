@@ -16,3 +16,25 @@ MISSING_QUERY_PARAM_MSG = "Query parameter {param} is missing from the event."
 
 INVALID_PARAMETER_MSG = "{} is invalid."
 INVALID_URL_MSG = "Invalid input type. Couldn't construct URL."
+
+# valdiation
+INVALID_FORMAT_MSG = "Invalid format provided: {extension}."
+INVALID_SIZE_MSG = "Invalid size provided: {size}."
+MISSING_OR_EMPTY_PARAM_MSG = "One or more parameters are missing or empty."
+INVALID_PARAM_TYPE_MSG = "One or more parameters are not of type string."
+
+# S3
+OBJECT_FOUND_MSG = "Object {key} found in bucket {bucket}."
+OBJECT_NOT_FOUND_MSG = "Object {key} not found in bucket {bucket}."
+UNEXPECTED_ERROR_MSG = "Unexpected error {error_code}: {error}"
+
+# AWS
+NO_AWS_CREDENTIALS_MSG = "No AWS credentials found"
+
+# HTTP
+BAD_REQUEST_MSG = "PreprocessingError occurred: {}"
+OBJECT_NOT_FOUND_MSG = "ObjectNotFoundError occurred: {}"
+FILE_PROCESSING_ERROR_MSG = "FileProcessingError occurred: {}"
+UNEXPECTED_ERROR_MSG = "Unexpected error occurred: {}"
+PREPROCESSING_ERROR_MSG = "Preprocessing error occurred: {}"
+INTERNAL_SERVER_ERROR_MSG = "Internal server error occurred: {}"

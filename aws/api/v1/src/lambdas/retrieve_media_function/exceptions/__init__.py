@@ -16,3 +16,4 @@ from preprocessing_exceptions import (  # noqa
     UnsupportedSizeError,
 )
 from rds_exceptions import RDSCommunicationError  # noqa
+from value_exceptions import InvalidImageFormatError, InvalidImageSizeError  # noqa

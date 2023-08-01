@@ -1,4 +1,4 @@
-from exceptions import ObjectNotFoundError
+import exceptions as ex
 from rds import fetch_media_info_from_rds
 from utils.media_processing import process_media
 from utils.s3_utils import construct_raw_media_key, object_exists
@@ -40,7 +40,7 @@ class MediaRequest:
         # getting raw media
         key_raw = self._constructe_raw_media_key()
         if not object_exists(self.raw_media_bucket, key_raw):
-            raise ObjectNotFoundError
+            raise ex.ObjectNotFoundError
 
         # processing
         key = process_media(
