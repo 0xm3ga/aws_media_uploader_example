@@ -1,8 +1,13 @@
+import logging
+
 import exceptions as ex
 from rds import fetch_media_info_from_rds
-from utils.media_processing import process_media
+from utils.media_processing_utils import convert_content_type_to_file_type
+from utils.media_processor_factory import MediaProcessorFactory
 from utils.s3_utils import construct_raw_media_key, object_exists
 from validation import normalize_extension, validate_extension, validate_size
+
+logger = logging.getLogger(__name__)
 
 
 class MediaRequest:
@@ -19,6 +24,7 @@ class MediaRequest:
         self.extension = self._validate_extension(extension)
         self.raw_media_bucket = raw_media_bucket
         self.username, self.content_type = self._fetch_media_info()
+        self.file_type = convert_content_type_to_file_type(self.content_type)
 
     def _normalize_extension(self, extension: str) -> str:
         return normalize_extension(extension)
@@ -43,13 +49,15 @@ class MediaRequest:
             raise ex.ObjectNotFoundError
 
         # processing
-        key = process_media(
+        processor = MediaProcessorFactory.create_processor(
             bucket=self.raw_media_bucket,
+            key=key_raw,
             filename=self.filename,
-            size=self.size,
-            extension=self.extension,
-            file_type=self.content_type,
+            format=self.extension,
+            sizes=[self.size],
             username=self.username,
+            file_type=self.file_type,
         )
+        key = processor.process()
 
-        return key
+        return str(key)
