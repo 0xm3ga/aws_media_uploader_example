@@ -38,3 +38,12 @@ FILE_PROCESSING_ERROR_MSG = "FileProcessingError occurred: {}"
 UNEXPECTED_ERROR_MSG = "Unexpected error occurred: {}"
 PREPROCESSING_ERROR_MSG = "Preprocessing error occurred: {}"
 INTERNAL_SERVER_ERROR_MSG = "Internal server error occurred: {}"
+
+# Lambda
+ERROR_INVOKING_LAMBDA_MSG = "Error occurred while invoking Lambda function: {}"
+ERROR_PROCESSING_RESPONSE_MSG = "Error occurred while processing Lambda function response: {}"
+ERROR_DURING_PROCESSING_MSG = "Error occurred during processing: {}"
+ERROR_UNSUPPORTED_FILE_TYPE_MSG = "File type {} not supported. Cannot process."
+
+# Features
+FEATURE_NOT_IMPLEMENTED_ERROR_MSG = "The feature '{feature_name}' is not yet implemented."

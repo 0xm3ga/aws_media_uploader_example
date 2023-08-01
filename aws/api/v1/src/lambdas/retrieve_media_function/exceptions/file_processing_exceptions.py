@@ -1,33 +1,53 @@
 from base_exceptions import CustomException
+from constants import error_messages as em
+
+
+class MediaProcessingError(CustomException):
+    """Base class for exceptions related to media processing."""
+
+    pass
 
 
 class FileProcessingError(CustomException):
     """Exception raised during file processing."""
 
-    def __init__(self, message="An error occurred while processing the file"):
+    def __init__(self, message=em.FILE_PROCESSING_ERROR_MSG):
         self.message = message
         super().__init__(message)
 
 
-class MediaProcessingError(Exception):
-    """Raised when there is an error in media processing."""
+class LambdaInvocationError(MediaProcessingError):
+    """Raised when there is an error invoking the Lambda function."""
 
-    ERROR_INVOKING_LAMBDA = "Error occurred while invoking Lambda function: {}"
-    ERROR_PROCESSING_RESPONSE = "Error occurred while processing Lambda function response: {}"
-    ERROR_DURING_PROCESSING = "Error occurred during processing: {}"
-    ERROR_UNSUPPORTED_FILE_TYPE = "File type {} not supported. Cannot process."
-
-    def __init__(self, error_type, details=""):
-        error_message = getattr(self, error_type, "").format(details)
-        super().__init__(error_message)
+    def __init__(self, details=""):
+        super().__init__(em.ERROR_INVOKING_LAMBDA_MSG.format(details))
 
 
-class FeatureNotImplementedError(Exception):
+class LambdaResponseProcessingError(MediaProcessingError):
+    """Raised when there is an error processing the Lambda function response."""
+
+    def __init__(self, details=""):
+        super().__init__(em.ERROR_PROCESSING_RESPONSE_MSG.format(details))
+
+
+class ProcessingError(MediaProcessingError):
+    """Raised when there is an error during processing."""
+
+    def __init__(self, details=""):
+        super().__init__(em.ERROR_DURING_PROCESSING_MSG.format(details))
+
+
+class UnsupportedFileTypeError(MediaProcessingError):
+    """Raised when the file type is not supported."""
+
+    def __init__(self, details=""):
+        super().__init__(em.ERROR_UNSUPPORTED_FILE_TYPE_MSG.format(details))
+
+
+class FeatureNotImplementedError(CustomException):
     """Raised when a feature is not yet implemented."""
-
-    ERROR_FEATURE_NOT_IMPLEMENTED = "The feature '{feature_name}' is not yet implemented."
 
     def __init__(self, feature_name: str):
         self.feature_name = feature_name
-        self.message = self.ERROR_FEATURE_NOT_IMPLEMENTED.format(feature_name=feature_name)
-        super().__init__(self.feature_name)
+        self.message = em.FEATURE_NOT_IMPLEMENTED_ERROR_MSG.format(feature_name=feature_name)
+        super().__init__(self.message)
