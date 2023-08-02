@@ -2,8 +2,7 @@ import logging
 
 import exceptions as ex
 from constants import error_messages as em
-from constants.accepted_formats_and_sizes import ACCEPTED_FORMATS, ACCEPTED_SIZES
-from custom_types import RetrieveMediaEvent
+from constants.media_constants.accepted_formats_and_sizes import ACCEPTED_FORMATS, ACCEPTED_SIZES
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -11,6 +10,8 @@ logger.setLevel(logging.INFO)
 
 def normalize_extension(extension: str) -> str:
     """Normalize the extension."""
+    logger.info("Normalizing the extension.")
+
     try:
         extension_normalized = str(extension).strip().lower()
     except Exception as e:
@@ -55,7 +56,7 @@ def validate_extension(extension: str) -> str:
     return extension_normalized
 
 
-def fetch_parameters_from_event(event: RetrieveMediaEvent):
+def fetch_parameters_from_event(event):
     """Fetch parameters from the event data."""
     logger.info("Fetching parameters from event")
 

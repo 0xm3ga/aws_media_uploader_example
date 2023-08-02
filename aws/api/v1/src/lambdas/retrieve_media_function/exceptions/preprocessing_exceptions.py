@@ -5,7 +5,7 @@ from constants import error_messages as em
 class PreprocessingError(CustomException):
     """Exception raised for preprocessing errors."""
 
-    def __init__(self, message="An error occurred during preprocessing"):
+    def __init__(self, message=em.GENERIC_PROCESSING_ERROR_MSG):
         self.message = message
         super().__init__(message)
 

@@ -1,0 +1,5 @@
+INVALID_FORMAT_MSG = "Invalid format provided: {extension}."
+INVALID_SIZE_MSG = "Invalid size provided: {size}."
+MISSING_OR_EMPTY_PARAM_MSG = "One or more parameters are missing or empty."
+INVALID_PARAM_TYPE_MSG = "One or more parameters are not of type string."
+UNSUPPORTED_MIME_TYPE_ERROR_MSG = "Unsupported MIME type: {}"
