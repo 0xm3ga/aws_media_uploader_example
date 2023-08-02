@@ -1,4 +1,4 @@
-from base_media import BaseMediaFormat, BaseMediaSize, MediaType
+from shared.constants.media_constants.base_media import BaseMediaFormat, BaseMediaSize, MediaType
 
 
 class VideoFormat(BaseMediaFormat):

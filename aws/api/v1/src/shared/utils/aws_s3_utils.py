@@ -3,8 +3,8 @@ from http import HTTPStatus
 
 import boto3
 from botocore.exceptions import ClientError
-from constants import error_messages as em
-from exceptions import InvalidURLError
+from shared.constants import error_messages as em
+from shared.exceptions import InvalidURLError
 
 logger = logging.getLogger(__name__)
 
