@@ -1,20 +1,42 @@
 post:
   tags:
     - Media
-  summary: Uploads media into S3
-  description: Uploads media (photos and video) into an S3 bucket
+  summary: Generate a presigned URL for S3 upload
+  description: Generate a presigned URL to upload media (photos and video) into an S3 bucket
   operationId: mediaUpload
-  requestBody:
-    $ref: "../components/requestBodies/uploadRequestBody.yaml"
+  parameters:
+    - in: header
+      name: username
+      required: true
+      schema:
+        type: string
+      description: The username from the authorizer
+    - in: query
+      name: content_type
+      required: true
+      schema:
+        type: string
+      description: The content type of the media to be uploaded
   responses:
-    "201":
-      description: Media successfully uploaded.
+    "200":
+      description: Successfully generated the presigned URL.
       content:
         application/json:
           schema:
-            $ref: "../components/schemas/mediaUploadResponse.yaml"
+            type: object
+            properties:
+              uploadURL:
+                type: string
+              filename:
+                type: string
     "400":
-      description: Bad Request, usually due to invalid event data.
+      description: Bad Request, usually due to missing or invalid event data.
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/error.yaml"
+    "401":
+      description: Unauthorized access, usually due to missing or invalid username.
       content:
         application/json:
           schema:
@@ -37,7 +59,8 @@ post:
         application/json:
           schema:
             $ref: "../components/schemas/error.yaml"
-
+  security:
+    - MainCognitoAuthorizer: []
   x-amazon-apigateway-integration:
     httpMethod: POST
     type: aws_proxy

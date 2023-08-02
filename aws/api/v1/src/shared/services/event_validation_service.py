@@ -1,8 +1,8 @@
 import logging
 from typing import Any, Dict, Optional, Type
 
-from constants import error_messages as em
 from shared import exceptions as ex
+from shared.constants import error_messages as em
 
 
 class EventValidator:
@@ -72,7 +72,7 @@ class EventValidator:
         optional: bool = False,
         expected_type: Optional[Type] = None,
         allowed_values=None,
-    ):
+    ) -> Any:
         return self._get_and_validate(
             dictionary=self._event.get("queryStringParameters", {}),
             name=name,
@@ -96,22 +96,14 @@ class EventValidator:
             allowed_values=allowed_values,
         )
 
-    def get_authorizer_parameter(self, name: str, optional: bool = False):
-        request_context = self._get_from_dict(
-            dictionary=self._event,
-            key="requestContext",
+    def get_authorizer_parameter(self, name: str, optional: bool = False) -> str:
+        value = self._get_from_dict(
+            dictionary=self._event.get("requestContext", {})
+            .get("authorizer", {})
+            .get("claims", {}),
+            key=f"cognito:{name}",
             optional=optional,
         )
-
-        if request_context is None and optional is False:
-            self.logger.error(em.UNAUTHORIZED_ERROR_MSG)
-            raise ex.UnauthorizedError(em.UNAUTHORIZED_ERROR_MSG)
-
-        authorizer = (
-            request_context.get("authorizer", {}).get("claims", {}) if request_context else {}
-        )
-
-        value = self._get_from_dict(authorizer, name, optional)
 
         if value is None and optional is False:
             self.logger.error(em.UNAUTHORIZED_ERROR_MSG)

@@ -41,12 +41,6 @@ def lambda_handler(event, context):
             allowed_values=allowed_content_type,
         )
 
-        if username is None:
-            raise ex.UnauthorizedError()
-
-        if content_type is None:
-            raise ex.MissingParameterError(parameter="content_type")
-
         # generating presigned url
         s3_presign_service = S3PresignService()
         filename, presigned_url = s3_presign_service.generate_presigned_url(
@@ -64,9 +58,12 @@ def lambda_handler(event, context):
     except (ex.MissingParameterError, ex.InvalidTypeError, ex.InvalidValueError) as e:
         return create_response(HTTPStatus.BAD_REQUEST, str(e))
 
-    except ex.UnauthorizedError as e:
-        logger.error(f"Unauthorized access attempt by user: {str(e)}")
-        return create_response(HTTPStatus.UNAUTHORIZED, "Unauthorized access")
+    except ex.UnauthorizedError:
+        logger.error(em.UNAUTHORIZED_ERROR_MSG)
+        return create_response(HTTPStatus.UNAUTHORIZED, em.UNAUTHORIZED_ERROR_MSG)
 
     except Exception:
         return create_response(HTTPStatus.INTERNAL_SERVER_ERROR, em.INTERNAL_SERVER_ERROR_MSG)
+
+
+lambda_handler({}, {})

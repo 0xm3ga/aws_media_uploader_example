@@ -1,6 +1,3 @@
-# exceptions/base_exceptions.py
-
-
 class CustomException(Exception):
     """Base class for other exceptions"""
 

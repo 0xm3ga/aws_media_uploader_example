@@ -1,5 +1,6 @@
-from base_exceptions import CustomException
-from constants import error_messages as em
+from shared.constants.error_messages import ENV_VAR_NOT_SET_MSG, MISSING_ENV_VARS_MSG
+
+from .base_exceptions import CustomException
 
 
 class EnvironmentVariableError(CustomException):
@@ -7,7 +8,7 @@ class EnvironmentVariableError(CustomException):
 
     def __init__(self, var_name: str):
         self.var_name = var_name
-        self.message = em.ENV_VAR_NOT_SET_MSG.format(var_name=self.var_name)
+        self.message = ENV_VAR_NOT_SET_MSG.format(var_name=self.var_name)
         super().__init__(self.var_name)
 
 
@@ -16,5 +17,5 @@ class MissingEnvironmentVariableError(CustomException):
 
     def __init__(self, missing_vars: list):
         self.missing_vars = missing_vars
-        self.message = em.MISSING_ENV_VARS_MSG.format(missing_vars=", ".join(missing_vars))
+        self.message = MISSING_ENV_VARS_MSG.format(missing_vars=", ".join(missing_vars))
         super().__init__(self.missing_vars)

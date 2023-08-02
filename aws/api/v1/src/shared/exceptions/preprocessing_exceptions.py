@@ -1,11 +1,20 @@
-from base_exceptions import CustomException
-from constants import error_messages as em
+from shared.constants.error_messages import (
+    GENERIC_PROCESSING_ERROR_MSG,
+    INVALID_PARAMETER_MSG,
+    INVALID_RDS_RESPONSE_MSG,
+    MISSING_PATH_PARAM_MSG,
+    MISSING_QUERY_PARAM_MSG,
+    UNSUPPORTED_EXTENSION_MSG,
+    UNSUPPORTED_SIZE_MSG,
+)
+
+from .base_exceptions import CustomException
 
 
 class PreprocessingError(CustomException):
     """Exception raised for preprocessing errors."""
 
-    def __init__(self, message=em.GENERIC_PROCESSING_ERROR_MSG):
+    def __init__(self, message=GENERIC_PROCESSING_ERROR_MSG):
         self.message = message
         super().__init__(message)
 
@@ -15,7 +24,7 @@ class UnsupportedExtensionError(PreprocessingError):
 
     def __init__(self, extension: str):
         self.extension = extension
-        super().__init__(em.UNSUPPORTED_EXTENSION_MSG.format(extension))
+        super().__init__(UNSUPPORTED_EXTENSION_MSG.format(extension))
 
 
 class UnsupportedSizeError(PreprocessingError):
@@ -23,7 +32,7 @@ class UnsupportedSizeError(PreprocessingError):
 
     def __init__(self, size: str):
         self.size = size
-        super().__init__(em.UNSUPPORTED_SIZE_MSG.format(size))
+        super().__init__(UNSUPPORTED_SIZE_MSG.format(size))
 
 
 class MissingRequiredRDSVariablesError(PreprocessingError):
@@ -31,7 +40,7 @@ class MissingRequiredRDSVariablesError(PreprocessingError):
 
     def __init__(self, missing_data: str):
         self.missing_data = missing_data
-        self.message = em.INVALID_RDS_RESPONSE_MSG.format(missing_data=self.missing_data)
+        self.message = INVALID_RDS_RESPONSE_MSG.format(missing_data=self.missing_data)
         super().__init__(self.message)
 
 
@@ -40,7 +49,7 @@ class MissingPathParamError(PreprocessingError):
 
     def __init__(self, param: str):
         self.param = param
-        self.message = em.MISSING_PATH_PARAM_MSG.format(param=self.param)
+        self.message = MISSING_PATH_PARAM_MSG.format(param=self.param)
         super().__init__(self.message)
 
 
@@ -49,7 +58,7 @@ class MissingQueryParamError(PreprocessingError):
 
     def __init__(self, param: str):
         self.param = param
-        self.message = em.MISSING_QUERY_PARAM_MSG.format(param=self.param)
+        self.message = MISSING_QUERY_PARAM_MSG.format(param=self.param)
         super().__init__(self.message)
 
 
@@ -57,5 +66,5 @@ class InvalidParameterError(PreprocessingError):
     """Raised when a provided parameter is invalid."""
 
     def __init__(self, parameter_name):
-        super().__init__(em.INVALID_PARAMETER_MSG.format(parameter_name))
+        super().__init__(INVALID_PARAMETER_MSG.format(parameter_name))
         self.parameter_name = parameter_name

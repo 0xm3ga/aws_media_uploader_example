@@ -23,19 +23,30 @@ paths:
           schema:
             type: string
           description: Filename of the media to retrieve
+        - name: extension
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Extension of the media to retrieve
         - name: size
           in: query
-          required: false
+          required: true
           schema:
             type: string
           description: Optional size of the media to retrieve
       responses:
         '200':
-          description: Media successfully retrieved.
-          content:
-            application/json:
+          description: >-
+            Media successfully retrieved. In practicality, a 302 redirect is
+            expected.
+        '302':
+          description: Successfully retrieved the media URL.
+          headers:
+            Location:
               schema:
-                $ref: '#/components/schemas/mediaRetrieveResponse'
+                type: string
+                format: uri
         '400':
           description: Bad Request, usually due to invalid parameters.
           content:
@@ -78,20 +89,44 @@ paths:
     post:
       tags:
         - Media
-      summary: Uploads media into S3
-      description: Uploads media (photos and video) into an S3 bucket
+      summary: Generate a presigned URL for S3 upload
+      description: >-
+        Generate a presigned URL to upload media (photos and video) into an S3
+        bucket
       operationId: mediaUpload
-      requestBody:
-        $ref: '#/components/requestBodies/uploadRequestBody'
+      parameters:
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username from the authorizer
+        - in: query
+          name: content_type
+          required: true
+          schema:
+            type: string
+          description: The content type of the media to be uploaded
       responses:
-        '201':
-          description: Media successfully uploaded.
+        '200':
+          description: Successfully generated the presigned URL.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/mediaUploadResponse'
+                type: object
+                properties:
+                  uploadURL:
+                    type: string
+                  filename:
+                    type: string
         '400':
-          description: Bad Request, usually due to invalid event data.
+          description: Bad Request, usually due to missing or invalid event data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized access, usually due to missing or invalid username.
           content:
             application/json:
               schema:
@@ -114,6 +149,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+      security:
+        - MainCognitoAuthorizer: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -134,30 +171,6 @@ components:
       name: none
       in: header
   schemas:
-    mediaRetrieveResponse:
-      type: object
-      properties:
-        statusCode:
-          type: integer
-          description: The HTTP status code of the response.
-        headers:
-          type: object
-          description: Headers to provide with the HTTP response.
-          properties:
-            Content-Type:
-              type: string
-              description: The MIME type of the response body.
-        body:
-          type: string
-          description: The base64-encoded image.
-        isBase64Encoded:
-          type: boolean
-          description: Whether or not the body is base64-encoded.
-      required:
-        - statusCode
-        - headers
-        - body
-        - isBase64Encoded
     error:
       title: Error
       type: object
@@ -169,38 +182,3 @@ components:
           type: string
           description: A human-readable message providing more details about the error.
           example: Internal service error.
-    mediaUploadResponse:
-      type: object
-      properties:
-        url:
-          type: string
-          description: URL where the uploaded file can be accessed.
-        id:
-          type: string
-          description: Unique identifier for the uploaded file.
-        fileName:
-          type: string
-          description: The original name of the uploaded file.
-        fileSize:
-          type: integer
-          description: The size of the uploaded file in bytes.
-        fileType:
-          type: string
-          description: The type of the uploaded file.
-      required:
-        - url
-        - id
-        - fileName
-        - fileSize
-        - fileType
-  requestBodies:
-    uploadRequestBody:
-      content:
-        multipart/form-data:
-          schema:
-            type: object
-            properties:
-              file:
-                type: string
-                format: binary
-      required: true

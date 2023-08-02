@@ -2,8 +2,8 @@ import uuid
 from typing import Tuple
 
 import boto3
-from constants.media_constants.file_types import FileType
-from utils.media_processing_utils import parse_content_type
+from shared.constants.media_constants.file_types import FileType
+from shared.utils.media_processing_utils import parse_content_type
 
 
 class S3PresignService:
