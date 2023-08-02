@@ -13,12 +13,8 @@ def create_response(status_code: HTTPStatus, message: Any):
 def create_redirect(status_code: HTTPStatus, location: str):
     """
     Creates a standard HTTP redirect response.
-
-    Args:
-        status_code (HTTPStatus): The HTTP status code of the response.
-        location (str): The redirect location URL.
-
-    Returns:
-        Dict[str, Optional[Union[int, str]]]: The constructed HTTP response.
     """
-    return {"statusCode": status_code, "headers": {"Location": location}}
+    return {
+        "statusCode": status_code,
+        "headers": {"Location": location},
+    }

@@ -47,7 +47,7 @@ class MediaRequest:
         return construct_raw_media_key(
             filename=self.filename,
             username=self.username,
-            file_type=self.content_type,
+            s3_prefix=self.file_type,
         )
 
     def _constructe_processed_media_key(self) -> str:

@@ -41,17 +41,17 @@ def construct_processed_media_key(filename: str, size: str, extension: str) -> s
     return processed_media_key
 
 
-def construct_raw_media_key(filename: str, username: str, file_type: str) -> str:
+def construct_raw_media_key(filename: str, username: str, s3_prefix: str) -> str:
     """Generate a key for raw media file."""
-    if not all([filename, username, file_type]):
+    if not all([filename, username, s3_prefix]):
         logger.error(em.MISSING_OR_EMPTY_PARAM_MSG)
         raise ValueError(em.MISSING_OR_EMPTY_PARAM_MSG)
 
-    if not all(isinstance(arg, str) for arg in [filename, username, file_type]):
+    if not all(isinstance(arg, str) for arg in [filename, username, s3_prefix]):
         logger.error(em.INVALID_PARAM_TYPE_MSG)
         raise TypeError(em.INVALID_PARAM_TYPE_MSG)
 
-    raw_media_key = f"{username}/{file_type}/{filename}"
+    raw_media_key = f"{username}/{s3_prefix}/{filename}"
     return raw_media_key
 
 
