@@ -11,19 +11,28 @@ get:
       schema:
         type: string
       description: Filename of the media to retrieve
+    - name: extension
+      in: query
+      required: true
+      schema:
+        type: string
+      description: Extension of the media to retrieve
     - name: size
       in: query
-      required: false
+      required: true
       schema:
         type: string
       description: Optional size of the media to retrieve
   responses:
     "200":
-      description: Media successfully retrieved.
-      content:
-        application/json:
+      description: Media successfully retrieved. In practicality, a 302 redirect is expected.
+    "302":
+      description: Successfully retrieved the media URL.
+      headers:
+        Location:
           schema:
-            $ref: "../components/schemas/mediaRetrieveResponse.yaml"
+            type: string
+            format: uri
     "400":
       description: Bad Request, usually due to invalid parameters.
       content:

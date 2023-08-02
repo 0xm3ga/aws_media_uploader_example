@@ -1,8 +1,8 @@
 from typing import Tuple
 
-from constants import error_messages as em
-from constants.media_constants.file_types import FileType, MediaType
-from exceptions import MediaProcessingError
+from shared.constants import error_messages as em
+from shared.constants.media_constants.file_types import FileType, MediaType
+from shared.exceptions import MediaProcessingError
 
 
 def parse_content_type(content_type: str) -> Tuple[str, str]:

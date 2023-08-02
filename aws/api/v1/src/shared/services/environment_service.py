@@ -2,8 +2,8 @@ import logging
 import os
 from typing import List
 
-from constants import error_messages as em
-from exceptions import EnvironmentVariableError, MissingEnvironmentVariableError
+from shared.constants import error_messages as em
+from shared.exceptions import EnvironmentVariableError, MissingEnvironmentVariableError
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
