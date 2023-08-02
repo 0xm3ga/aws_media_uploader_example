@@ -1,12 +1,12 @@
 import logging
 from typing import List
 
-import exceptions as ex
-from constants import error_messages as em
-from constants.media_constants.file_types import FileType
+import shared.exceptions as ex
 from processors.image_processor import ImageProcessor
 from processors.media_processor import MediaProcessor
 from processors.video_processor import VideoProcessor
+from shared.constants import error_messages as em
+from shared.constants.media_constants.file_types import FileType
 
 logger = logging.getLogger(__name__)
 

@@ -19,7 +19,11 @@ class LambdaInvoker:
     def invoke(self, function_arn: str, payload: dict) -> dict:
         """Invokes a Lambda function and returns its response."""
         logger.info(
-            "Invoking lambda function", extra={"function_arn": function_arn, "payload": payload}
+            "Invoking lambda function",
+            extra={
+                "function_arn": function_arn,
+                "payload": payload,
+            },
         )
 
         try:

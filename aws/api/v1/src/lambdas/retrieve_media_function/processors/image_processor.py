@@ -1,10 +1,10 @@
 import logging
 from typing import List
 
-from constants import error_messages as em
-from exceptions import MediaProcessingError
 from media_processor import MediaProcessor
-from services.image_processing_service import ImageProcessingInvoker
+from shared.constants import error_messages as em
+from shared.exceptions import MediaProcessingError
+from shared.services.image_processing_service import ImageProcessingInvoker
 
 logger = logging.getLogger(__name__)
 
