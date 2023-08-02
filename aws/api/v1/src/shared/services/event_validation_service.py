@@ -96,7 +96,7 @@ class EventValidator:
             allowed_values=allowed_values,
         )
 
-    def get_authorizer_parameter(self, name: str, optional: bool = False) -> str:
+    def get_authorizer_parameter(self, name: str, optional: bool = False) -> Any:
         value = self._get_from_dict(
             dictionary=self._event.get("requestContext", {})
             .get("authorizer", {})

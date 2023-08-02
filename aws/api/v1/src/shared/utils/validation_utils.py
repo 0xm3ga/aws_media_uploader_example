@@ -2,7 +2,7 @@ import logging
 
 import exceptions as ex
 from constants import error_messages as em
-from constants.media_constants.accepted_formats_and_sizes import ACCEPTED_FORMATS, ACCEPTED_SIZES
+from constants.media_constants.media import MediaFormat, MediaSize
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -31,7 +31,7 @@ def validate_size(size: str) -> str:
         logger.error(em.INVALID_PARAMETER_MSG.format(str(e)))
         raise ex.InvalidParameterError(str(e))
 
-    if size not in ACCEPTED_SIZES:
+    if size not in MediaSize.allowed_sizes():
         logger.error(em.UNSUPPORTED_SIZE_MSG.format(size))
         raise ex.UnsupportedSizeError(size)
 
@@ -49,7 +49,7 @@ def validate_extension(extension: str) -> str:
         raise ex.InvalidParameterError(str(e))
 
     extension_normalized = normalize_extension(extension)
-    if extension_normalized not in ACCEPTED_FORMATS:
+    if extension_normalized not in MediaFormat.allowed_extensions():
         logger.error(em.UNSUPPORTED_EXTENSION_MSG.format(extension_normalized))
         raise ex.UnsupportedExtensionError(extension_normalized)
 
