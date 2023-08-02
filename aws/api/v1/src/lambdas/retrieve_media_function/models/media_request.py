@@ -1,11 +1,11 @@
 import logging
 
 import exceptions as ex
-from rds import fetch_media_info_from_rds
+from factories.media_processor_factory import MediaProcessorFactory
+from services.rds_service import fetch_media_info_from_rds
+from utils.aws_s3_utils import construct_raw_media_key, object_exists
 from utils.media_processing_utils import convert_content_type_to_file_type
-from utils.media_processor_factory import MediaProcessorFactory
-from utils.s3_utils import construct_raw_media_key, object_exists
-from validation import normalize_extension, validate_extension, validate_size
+from utils.validation_utils import normalize_extension, validate_extension, validate_size
 
 logger = logging.getLogger(__name__)
 

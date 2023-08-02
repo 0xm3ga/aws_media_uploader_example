@@ -3,8 +3,10 @@ from typing import List
 
 import exceptions as ex
 from constants import error_messages as em
-from constants.file_types import FileType
-from media_processors import ImageProcessor, MediaProcessor, VideoProcessor
+from constants.media_constants.file_types import FileType
+from processors.image_processor import ImageProcessor
+from processors.media_processor import MediaProcessor
+from processors.video_processor import VideoProcessor
 
 logger = logging.getLogger(__name__)
 

@@ -4,7 +4,7 @@ from typing import List
 
 from constants import error_messages as em
 from exceptions import MediaProcessingError
-from utils.lambda_invoker import LambdaInvoker
+from services.lambda_invocation_service import LambdaInvoker
 
 logger = logging.getLogger(__name__)
 
@@ -38,8 +38,8 @@ class ImageProcessingInvoker:
         """Invokes the image processing Lambda function and returns its response."""
         payload = self._create_payload(bucket, key, filename, format, sizes)
         response = self.lambda_invoker.invoke(self.function_arn, payload)
-
-        return self.extract_and_process_response(response)
+        processed_response = self.extract_and_process_response(response)
+        return processed_response
 
     def _extract_payload_from_response(self, response: dict):
         try:

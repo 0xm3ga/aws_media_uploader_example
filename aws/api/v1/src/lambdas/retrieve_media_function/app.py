@@ -4,17 +4,16 @@ from http import HTTPStatus
 import exceptions as ex
 from botocore.exceptions import NoCredentialsError
 from constants import error_messages as em
-from custom_types import RetrieveMediaEvent
-from media_request import MediaRequest
-from utils.environment_utils import Environment
-from utils.s3_utils import construct_media_url
-from validation import fetch_parameters_from_event
+from models.media_request import MediaRequest
+from services.environment_service import Environment
+from utils.aws_s3_utils import construct_media_url
+from utils.validation_utils import fetch_parameters_from_event
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-def lambda_handler(event: RetrieveMediaEvent, context):
+def lambda_handler(event, context):
     """Lambda function handler."""
     try:
         logger.info("Fetching environment variables.")
