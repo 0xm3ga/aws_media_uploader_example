@@ -1,5 +1,5 @@
-from image import ImageFormat, ImageSize
-from video import VideoFormat, VideoSize
+from shared.constants.media_constants.image import ImageFormat, ImageSize
+from shared.constants.media_constants.video import VideoFormat, VideoSize
 
 
 class MediaFormat:
