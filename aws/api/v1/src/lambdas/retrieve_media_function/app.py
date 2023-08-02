@@ -1,13 +1,14 @@
 import logging
 from http import HTTPStatus
 
-import exceptions as ex
+import shared.exceptions as ex
 from botocore.exceptions import NoCredentialsError
-from constants import error_messages as em
 from models.media_request import MediaRequest
-from services.environment_service import Environment
-from utils.aws_s3_utils import construct_media_url
-from utils.validation_utils import fetch_parameters_from_event
+from shared.constants import error_messages as em
+from shared.services.environment_service import Environment
+from shared.utils.aws_api_utils import create_redirect, create_response
+from shared.utils.aws_s3_utils import construct_media_url
+from shared.utils.validation_utils import fetch_parameters_from_event
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -16,9 +17,8 @@ logger.setLevel(logging.INFO)
 def lambda_handler(event, context):
     """Lambda function handler."""
     try:
-        logger.info("Fetching environment variables.")
-
         # env vars
+        logger.info("Fetching environment variables.")
         env = Environment(["RAW_MEDIA_BUCKET", "MEDIA_DOMAIN_NAME"])
         env.fetch_required_variables()
 
@@ -37,23 +37,20 @@ def lambda_handler(event, context):
         # construct response
         logger.info("Constructing response.")
         url = construct_media_url(media_domain_name, key)
-        return {"statusCode": HTTPStatus.FOUND, "headers": {"Location": url}}
+        return create_redirect(HTTPStatus.FOUND, url)
 
     except NoCredentialsError as e:
         logger.error(em.NO_AWS_CREDENTIALS_MSG.format(str(e)))
-        return {"statusCode": HTTPStatus.FORBIDDEN, "body": em.NO_AWS_CREDENTIALS_MSG}
+        return create_response(HTTPStatus.INTERNAL_SERVER_ERROR, em.NO_AWS_CREDENTIALS_MSG)
     except ex.PreprocessingError as e:
         logger.error(em.PREPROCESSING_ERROR_MSG.format(str(e)))
-        return {"statusCode": HTTPStatus.BAD_REQUEST, "body": str(e)}
+        return create_response(HTTPStatus.BAD_REQUEST, str(e))
     except ex.ObjectNotFoundError as e:
         logger.error(em.OBJECT_NOT_FOUND_MSG.format(str(e)))
-        return {"statusCode": HTTPStatus.NOT_FOUND, "body": str(e)}
+        return create_response(HTTPStatus.NOT_FOUND, str(e))
     except ex.FileProcessingError as e:
         logger.error(em.FILE_PROCESSING_ERROR_MSG.format(str(e)))
-        return {
-            "statusCode": HTTPStatus.INTERNAL_SERVER_ERROR,
-            "body": em.FILE_PROCESSING_ERROR_MSG,
-        }
+        return create_response(HTTPStatus.INTERNAL_SERVER_ERROR, em.FILE_PROCESSING_ERROR_MSG)
     except Exception as e:
         logger.error(em.INTERNAL_SERVER_ERROR_MSG.format(str(e)))
-        return {"statusCode": HTTPStatus.INTERNAL_SERVER_ERROR, "body": str(e)}
+        return create_response(HTTPStatus.INTERNAL_SERVER_ERROR, str(e))

@@ -1,11 +1,15 @@
 import logging
 
-import exceptions as ex
+import shared.exceptions as ex
 from factories.media_processor_factory import MediaProcessorFactory
-from services.rds_service import fetch_media_info_from_rds
-from utils.aws_s3_utils import construct_raw_media_key, object_exists
-from utils.media_processing_utils import convert_content_type_to_file_type
-from utils.validation_utils import normalize_extension, validate_extension, validate_size
+from shared.services.rds_service import fetch_media_info_from_rds
+from shared.utils.aws_s3_utils import (
+    construct_processed_media_key,
+    construct_raw_media_key,
+    object_exists,
+)
+from shared.utils.media_processing_utils import convert_content_type_to_file_type
+from shared.utils.validation_utils import normalize_extension, validate_extension, validate_size
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +44,18 @@ class MediaRequest:
         return fetch_media_info_from_rds(self.filename)
 
     def _constructe_raw_media_key(self) -> str:
-        return construct_raw_media_key(self.filename, self.username, self.content_type)
+        return construct_raw_media_key(
+            filename=self.filename,
+            username=self.username,
+            file_type=self.content_type,
+        )
+
+    def _constructe_processed_media_key(self) -> str:
+        return construct_processed_media_key(
+            filename=self.filename,
+            size=self.size,
+            extension=self.extension,
+        )
 
     def process(self) -> str:
         # getting raw media
@@ -58,6 +73,8 @@ class MediaRequest:
             username=self.username,
             file_type=self.file_type,
         )
-        key = processor.process()
+        processor.process()
 
-        return str(key)
+        key = self._constructe_processed_media_key()
+
+        return key

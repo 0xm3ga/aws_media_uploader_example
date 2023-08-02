@@ -13,3 +13,5 @@ INVALID_URL_MSG = "Invalid input type. Couldn't construct URL."
 
 MISSING_FIELD_IN_RESPONSE_ERROR_MSG = "Expected field '{}' is missing in the response."
 NULL_OR_EMPTY_FIELD_IN_RESPONSE_ERROR_MSG = "Field '{}' in the response is null or empty."
+
+INVALID_CONTENT_TYPE = "Invalid content type received: {}"

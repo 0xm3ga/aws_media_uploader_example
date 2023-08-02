@@ -1,47 +1,72 @@
-import json
-import os
-import uuid
+import logging
+from http import HTTPStatus
 
-import boto3
+import shared.exceptions as ex
+from botocore.exceptions import NoCredentialsError
+from shared.constants import error_messages as em
+from shared.services.aws_s3_presigned_service import S3PresignService
+from shared.services.environment_service import Environment
+from shared.services.event_validation_service import EventValidator
+from shared.utils.aws_api_utils import create_response
 
-s3_client = boto3.client("s3")
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
-# Reference the bucket name from the environment variable
-bucket_name = os.environ["RAW_MEDIA_BUCKET"]
+
+allowed_content_type = [
+    "image/jpeg",
+    "image/png",
+    "video/mp4",
+    "image/mov",
+]
 
 
 def lambda_handler(event, context):
-    # Get the user's username from the request context
-    username = event["requestContext"]["authorizer"]["claims"]["cognito:username"]
+    """Lambda function handler."""
+    try:
+        # env vars
+        logger.info("Fetching environment variables.")
+        env = Environment(["RAW_MEDIA_BUCKET"])
+        env.fetch_required_variables()
 
-    # Get the file type from the event.
-    file_type = event["queryStringParameters"]["type"]
+        raw_bucket_name = env.fetch_variable("RAW_MEDIA_BUCKET")
 
-    # Based on the type define the path prefix
-    if file_type.startswith("image/"):
-        path_prefix = "images/"
-    elif file_type.startswith("video/"):
-        path_prefix = "videos/"
-    else:
-        return {"statusCode": 400, "body": "Invalid file type"}
+        # getting vars from event
+        validator = EventValidator(event)
+        username = validator.get_authorizer_parameter("username")
+        content_type = validator.get_query_string_parameter(
+            "content_type",
+            optional=False,
+            expected_type=str,
+            allowed_values=allowed_content_type,
+        )
 
-    # Generate a unique filename using UUID
-    filename = str(uuid.uuid4())
+        if username is None:
+            raise ex.UnauthorizedError()
 
-    if file_type == "image":
-        filename = filename + ".jpg"
-    elif file_type == "video":
-        filename = filename + ".mp4"
+        if content_type is None:
+            raise ex.MissingParameterError(parameter="content_type")
 
-    file_key = f"{username}/{path_prefix}{filename}"
+        # generating presigned url
+        s3_presign_service = S3PresignService()
+        filename, presigned_url = s3_presign_service.generate_presigned_url(
+            content_type=content_type,
+            username=username,
+            raw_bucket_name=raw_bucket_name,
+        )
 
-    presigned_url = s3_client.generate_presigned_url(
-        "put_object",
-        Params={"Bucket": bucket_name, "Key": file_key, "ContentType": file_type},
-        ExpiresIn=3600,
-    )
+        return create_response(HTTPStatus.OK, {"uploadURL": presigned_url, "filename": filename})
 
-    return {
-        "statusCode": 200,
-        "body": json.dumps({"uploadURL": presigned_url, "filename": filename}),
-    }
+    except NoCredentialsError as e:
+        logger.error(em.NO_AWS_CREDENTIALS_MSG.format(str(e)))
+        return create_response(HTTPStatus.INTERNAL_SERVER_ERROR, em.NO_AWS_CREDENTIALS_MSG)
+
+    except (ex.MissingParameterError, ex.InvalidTypeError, ex.InvalidValueError) as e:
+        return create_response(HTTPStatus.BAD_REQUEST, str(e))
+
+    except ex.UnauthorizedError as e:
+        logger.error(f"Unauthorized access attempt by user: {str(e)}")
+        return create_response(HTTPStatus.UNAUTHORIZED, "Unauthorized access")
+
+    except Exception:
+        return create_response(HTTPStatus.INTERNAL_SERVER_ERROR, em.INTERNAL_SERVER_ERROR_MSG)
