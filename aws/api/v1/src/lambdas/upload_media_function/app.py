@@ -3,12 +3,13 @@ from http import HTTPStatus
 
 import shared.exceptions as ex
 from botocore.exceptions import NoCredentialsError
-from shared.constants import error_messages as em
-from shared.constants.media_constants.media import MediaFormat
-from shared.services.aws_s3_presigned_service import S3PresignService
+from shared.constants.error_messages import HttpErrorMessages
+from shared.constants.media_constants import MediaFormat
+from shared.services.aws.api.api_base_service import ApiBaseService
+from shared.services.aws.s3.s3_presigned_service import S3PresignService
 from shared.services.environment_service import Environment
 from shared.services.event_validation_service import EventValidator
-from shared.utils.aws_api_utils import create_response
+from shared.utils.media_factory import MediaFactory
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -34,26 +35,36 @@ def lambda_handler(event, context):
             allowed_values=MediaFormat.allowed_content_types(),
         )
 
+        media = MediaFactory.create_media(content_type)
+
         # generating presigned url
         s3_presign_service = S3PresignService()
         filename, presigned_url = s3_presign_service.generate_presigned_url(
-            content_type=content_type,
+            media=media,
             username=username,
             raw_bucket_name=raw_bucket_name,
         )
 
-        return create_response(HTTPStatus.OK, {"uploadURL": presigned_url, "filename": filename})
+        return ApiBaseService.create_response(
+            HTTPStatus.OK, {"uploadURL": presigned_url, "filename": filename}
+        )
 
     except NoCredentialsError as e:
-        logger.error(em.NO_AWS_CREDENTIALS_MSG.format(str(e)))
-        return create_response(HTTPStatus.INTERNAL_SERVER_ERROR, em.NO_AWS_CREDENTIALS_MSG)
+        logger.error(HttpErrorMessages.UNEXPECTED_ERROR.format(e))
+        return ApiBaseService.create_response(
+            HTTPStatus.INTERNAL_SERVER_ERROR, HttpErrorMessages.INTERNAL_SERVER_ERROR
+        )
 
     except (ex.MissingParameterError, ex.InvalidTypeError, ex.InvalidValueError) as e:
-        return create_response(HTTPStatus.BAD_REQUEST, str(e))
+        return ApiBaseService.create_response(HTTPStatus.BAD_REQUEST, str(e))
 
     except ex.UnauthorizedError:
-        logger.error(em.UNAUTHORIZED_ERROR_MSG)
-        return create_response(HTTPStatus.UNAUTHORIZED, em.UNAUTHORIZED_ERROR_MSG)
+        logger.error(HttpErrorMessages.UNAUTHORIZED)
+        return ApiBaseService.create_response(
+            HTTPStatus.UNAUTHORIZED, HttpErrorMessages.UNAUTHORIZED
+        )
 
     except Exception:
-        return create_response(HTTPStatus.INTERNAL_SERVER_ERROR, em.INTERNAL_SERVER_ERROR_MSG)
+        return ApiBaseService.create_response(
+            HTTPStatus.INTERNAL_SERVER_ERROR, HttpErrorMessages.INTERNAL_SERVER_ERROR
+        )

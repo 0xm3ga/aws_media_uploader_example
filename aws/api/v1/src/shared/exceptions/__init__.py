@@ -1,4 +1,5 @@
 from .api_exceptions import *  # noqa
+from .aws_s3_exceptions import *  # noqa
 from .base_exceptions import *  # noqa
 from .environment_exceptions import *  # noqa
 from .file_processing_exceptions import *  # noqa

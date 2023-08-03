@@ -2,7 +2,7 @@ import logging
 from typing import Any, Dict, Optional, Type
 
 from shared import exceptions as ex
-from shared.constants import error_messages as em
+from shared.constants.error_messages import ValidationErrorMessages
 
 
 class EventValidator:
@@ -18,7 +18,7 @@ class EventValidator:
             if optional:
                 return None
             else:
-                self.logger.error(em.MISSING_PARAMETER_ERROR_MSG.format(parameter=key))
+                self.logger.error(ValidationErrorMessages.MISSING_PARAMETER.format(parameter=key))
                 raise ex.MissingParameterError(parameter=key)
 
     def _validate_type(self, value: Any, name: str, expected_type: Optional[Type] = None):
@@ -27,7 +27,7 @@ class EventValidator:
 
         if not isinstance(value, expected_type):
             self.logger.error(
-                em.INVALID_TYPE_ERROR_MSG.format(
+                ValidationErrorMessages.INVALID_TYPE.format(
                     parameter=name,
                     actual=type(value).__name__,
                     expected=expected_type.__name__,
@@ -45,7 +45,7 @@ class EventValidator:
 
         if value not in allowed_values:
             self.logger.error(
-                em.PARAMETER_NOT_IN_SET_ERROR_MSG.format(
+                ValidationErrorMessages.PARAMETER_NOT_IN_SET.format(
                     parameter=name,
                     value=value,
                     allowed_values=allowed_values,
@@ -87,7 +87,7 @@ class EventValidator:
         optional: bool = False,
         expected_type: Optional[Type] = None,
         allowed_values=None,
-    ):
+    ) -> Any:
         return self._get_and_validate(
             dictionary=self._event.get("pathParameters", {}),
             name=name,
@@ -106,7 +106,7 @@ class EventValidator:
         )
 
         if value is None and optional is False:
-            self.logger.error(em.UNAUTHORIZED_ERROR_MSG)
-            raise ex.UnauthorizedError(em.UNAUTHORIZED_ERROR_MSG)
+            self.logger.error(ValidationErrorMessages.UNAUTHORIZED)
+            raise ex.UnauthorizedError(ValidationErrorMessages.UNAUTHORIZED)
 
         return value

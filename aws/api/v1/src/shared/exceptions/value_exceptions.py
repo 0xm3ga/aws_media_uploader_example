@@ -1,4 +1,4 @@
-from shared.constants.error_messages import INVALID_FORMAT_MSG, INVALID_SIZE_MSG
+from shared.constants.error_messages import ProcessingErrorMessages
 
 from .base_exceptions import CustomException
 
@@ -7,11 +7,11 @@ class InvalidImageFormatError(CustomException):
     """Exception raised when an unsupported image format is encountered."""
 
     def __init__(self, extension: str):
-        super().__init__(INVALID_FORMAT_MSG.format(extension))
+        super().__init__(ProcessingErrorMessages.UNSUPPORTED_EXTENSION.format(extension))
 
 
 class InvalidImageSizeError(CustomException):
     """Exception raised when an unsupported image size is encountered."""
 
     def __init__(self, size: str):
-        super().__init__(INVALID_SIZE_MSG.format(size))
+        super().__init__(ProcessingErrorMessages.UNSUPPORTED_SIZE.format(size))

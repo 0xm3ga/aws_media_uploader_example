@@ -4,8 +4,8 @@ from http import HTTPStatus
 
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
-from constants import error_messages as em
-from exceptions import MediaProcessingError
+from shared.constants.error_messages import HttpErrorMessages, LambdaErrorMessages
+from shared.exceptions import MediaProcessingError
 
 logger = logging.getLogger(__name__)
 
@@ -33,19 +33,19 @@ class LambdaInvoker:
                 Payload=json.dumps(payload),
             )
         except (BotoCoreError, ClientError) as e:
-            logger.error(em.ERROR_INVOKING_LAMBDA_MSG.format(str(e)))
-            raise MediaProcessingError(em.ERROR_INVOKING_LAMBDA_MSG.format(str(e)))
+            logger.error(LambdaErrorMessages.ERROR_INVOKING_LAMBDA.format(str(e)))
+            raise MediaProcessingError(LambdaErrorMessages.ERROR_INVOKING_LAMBDA.format(str(e)))
 
         return self._process_response(response)
 
     def _process_response(self, response: dict) -> dict:
         if response["StatusCode"] != HTTPStatus.OK:
             if response["StatusCode"] == HTTPStatus.FORBIDDEN:
-                raise MediaProcessingError(em.FORBIDDEN_ERROR_MSG)
+                raise MediaProcessingError(HttpErrorMessages.FORBIDDEN)
             elif response["StatusCode"] == HTTPStatus.NOT_FOUND:
-                raise MediaProcessingError(em.RESOURCE_NOT_FOUND_ERROR_MSG)
+                raise MediaProcessingError(HttpErrorMessages.RESOURCE_NOT_FOUND)
             else:
                 raise MediaProcessingError(
-                    em.UNEXPECTED_STATUS_CODE_ERROR_MSG.format(response["StatusCode"])
+                    HttpErrorMessages.UNEXPECTED_STATUS_CODE.format(response["StatusCode"])
                 )
         return response

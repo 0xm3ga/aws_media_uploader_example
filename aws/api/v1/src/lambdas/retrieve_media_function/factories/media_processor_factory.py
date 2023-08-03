@@ -5,8 +5,8 @@ import shared.exceptions as ex
 from processors.image_processor import ImageProcessor
 from processors.media_processor import MediaProcessor
 from processors.video_processor import VideoProcessor
-from shared.constants import error_messages as em
-from shared.constants.media_constants.file_types import FileType
+from shared.constants.error_messages import LambdaErrorMessages
+from shared.constants.media_constants.base import MediaType
 
 logger = logging.getLogger(__name__)
 
@@ -22,15 +22,15 @@ class MediaProcessorFactory:
         format: str,
         sizes: List[str],
         username: str,
-        file_type: str,
+        media_type: MediaType,
     ) -> MediaProcessor:
         """
         Creates and returns an instance of the appropriate media processor based on the file type.
         """
-        if file_type == FileType.IMAGE.value:
+        if media_type == MediaType.IMAGE:
             return ImageProcessor(bucket, key, filename, format, sizes, username)
-        elif file_type == FileType.VIDEO.value:
+        elif media_type == MediaType.VIDEO:
             return VideoProcessor(bucket, key, filename, format, sizes, username)
         else:
-            logger.error(em.ERROR_UNSUPPORTED_FILE_TYPE_MSG.format(file_type))
-            raise ex.UnsupportedFileTypeError(file_type)
+            logger.error(LambdaErrorMessages.ERROR_UNSUPPORTED_FILE_TYPE.format(media_type.value))
+            raise ex.UnsupportedFileTypeError(media_type.value)
