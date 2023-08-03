@@ -3,6 +3,7 @@ from typing import List
 
 from media_processor import MediaProcessor
 from shared.constants.error_messages import LambdaErrorMessages
+from shared.constants.media_constants.image import ImageFormat, ImageSize
 from shared.exceptions import MediaProcessingError
 from shared.services.aws.lambdas.image_processing_service import ImageProcessingInvoker
 
@@ -17,14 +18,14 @@ class ImageProcessor(MediaProcessor):
         bucket: str,
         key: str,
         filename: str,
-        format: str,
-        sizes: List[str],
+        format: ImageFormat,
+        sizes: List[ImageSize],
         username: str,
     ):
         self.bucket = bucket
         self.key = key
         self.filename = filename
-        self.image_format = format
+        self.format = format
         self.sizes = sizes
         self.username = username
         self.image_processing_invoker = ImageProcessingInvoker()
@@ -35,7 +36,7 @@ class ImageProcessor(MediaProcessor):
                 self.bucket,
                 self.key,
                 self.filename,
-                self.image_format,
+                self.format,
                 self.sizes,
             )
             return result

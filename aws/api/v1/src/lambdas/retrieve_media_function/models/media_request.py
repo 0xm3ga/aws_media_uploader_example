@@ -15,20 +15,24 @@ class MediaRequest:
     size: str
     extension: str
     raw_media_bucket: str
-    username: str
-    content_type: str
 
-    def __init__(self, filename: str, size: str, extension: str, raw_media_bucket: str):
+    def __init__(
+        self,
+        filename: str,
+        size: str,
+        extension: str,
+        raw_media_bucket: str,
+    ):
         self.s3_service = S3BaseService()
         self.rds_service = RdsBaseService()
         self.filename = filename
         self.raw_media_bucket = raw_media_bucket
 
-        self.size = MediaSize.validate_size(size)
-        self.extension = MediaFormat.validate_extension(extension)
-
         self.username, self.content_type = self._fetch_media_info()
         self.media = MediaFactory.create_media(self.content_type)
+
+        self.size = MediaSize.validate_size(size)
+        self.extension = MediaFormat.validate_extension(extension)
 
     def _fetch_media_info(self) -> tuple:
         return self.rds_service.fetch_media_info_from_rds(self.filename)
@@ -48,7 +52,7 @@ class MediaRequest:
             bucket=self.raw_media_bucket,
             key=key_raw,
             filename=self.filename,
-            format=self.media.extension,
+            extension=self.extension,
             sizes=[self.size],
             username=self.username,
             media_type=self.media.media_type,
@@ -58,7 +62,7 @@ class MediaRequest:
         key = self.s3_service.construct_processed_media_key(
             filename=self.filename,
             size=self.size,
-            extension=self.media.extension,
+            extension=self.extension,
         )
 
         return key
