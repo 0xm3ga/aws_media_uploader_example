@@ -2,14 +2,10 @@ import logging
 
 import shared.exceptions as ex
 from factories.media_processor_factory import MediaProcessorFactory
-from shared.services.rds_service import fetch_media_info_from_rds
-from shared.utils.aws_s3_utils import (
-    construct_processed_media_key,
-    construct_raw_media_key,
-    object_exists,
-)
-from shared.utils.media_processing_utils import convert_content_type_to_file_type
-from shared.utils.validation_utils import normalize_extension, validate_extension, validate_size
+from shared.constants.media_constants.media import MediaFormat, MediaSize
+from shared.services.aws.rds.rds_service import RdsBaseService
+from shared.services.aws.s3.s3_base_service import S3BaseService
+from shared.utils.media_factory import MediaFactory
 
 logger = logging.getLogger(__name__)
 
@@ -23,44 +19,28 @@ class MediaRequest:
     content_type: str
 
     def __init__(self, filename: str, size: str, extension: str, raw_media_bucket: str):
+        self.s3_service = S3BaseService()
+        self.rds_service = RdsBaseService()
         self.filename = filename
-        self.size = self._validate_size(size)
-        self.extension = self._validate_extension(extension)
         self.raw_media_bucket = raw_media_bucket
+
+        self.size = MediaSize.validate_size(size)
+        self.extension = MediaFormat.validate_extension(extension)
+
         self.username, self.content_type = self._fetch_media_info()
-        self.file_type = convert_content_type_to_file_type(self.content_type)
-
-    def _normalize_extension(self, extension: str) -> str:
-        return normalize_extension(extension)
-
-    def _validate_size(self, size: str) -> str:
-        return validate_size(size)
-
-    def _validate_extension(self, extension: str) -> str:
-        normalized_extension = normalize_extension(extension)
-        return validate_extension(normalized_extension)
+        self.media = MediaFactory.create_media(self.content_type)
 
     def _fetch_media_info(self) -> tuple:
-        return fetch_media_info_from_rds(self.filename)
-
-    def _constructe_raw_media_key(self) -> str:
-        return construct_raw_media_key(
-            filename=self.filename,
-            username=self.username,
-            s3_prefix=self.file_type,
-        )
-
-    def _constructe_processed_media_key(self) -> str:
-        return construct_processed_media_key(
-            filename=self.filename,
-            size=self.size,
-            extension=self.extension,
-        )
+        return self.rds_service.fetch_media_info_from_rds(self.filename)
 
     def process(self) -> str:
         # getting raw media
-        key_raw = self._constructe_raw_media_key()
-        if not object_exists(self.raw_media_bucket, key_raw):
+        key_raw = self.s3_service.construct_raw_media_key(
+            filename=self.filename,
+            username=self.username,
+            s3_prefix=self.media.s3_prefix,
+        )
+        if not self.s3_service.object_exists(bucket=self.raw_media_bucket, key=key_raw):
             raise ex.ObjectNotFoundError
 
         # processing
@@ -68,13 +48,20 @@ class MediaRequest:
             bucket=self.raw_media_bucket,
             key=key_raw,
             filename=self.filename,
-            format=self.extension,
+            format=self.media.extension,
             sizes=[self.size],
             username=self.username,
-            file_type=self.file_type,
+            media_type=self.media.media_type,
         )
         processor.process()
 
-        key = self._constructe_processed_media_key()
+        key = self.s3_service.construct_processed_media_key(
+            filename=self.filename,
+            size=self.size,
+            extension=self.media.extension,
+        )
 
         return key
+
+    def construct_url(self, domain_name: str, key: str):
+        return self.s3_service.construct_media_url(domain_name=domain_name, path=key)

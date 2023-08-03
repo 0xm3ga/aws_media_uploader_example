@@ -2,9 +2,9 @@ import logging
 from typing import List
 
 from media_processor import MediaProcessor
-from shared.constants import error_messages as em
+from shared.constants.error_messages import LambdaErrorMessages
 from shared.exceptions import MediaProcessingError
-from shared.services.image_processing_service import ImageProcessingInvoker
+from shared.services.aws.lambdas.image_processing_service import ImageProcessingInvoker
 
 logger = logging.getLogger(__name__)
 
@@ -40,4 +40,4 @@ class ImageProcessor(MediaProcessor):
             )
             return result
         except Exception as e:
-            raise MediaProcessingError(em.ERROR_DURING_PROCESSING_MSG.format(str(e)))
+            raise MediaProcessingError(LambdaErrorMessages.ERROR_DURING_PROCESSING.format(str(e)))

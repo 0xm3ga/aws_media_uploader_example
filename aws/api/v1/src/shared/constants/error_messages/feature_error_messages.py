@@ -1,1 +1,2 @@
-FEATURE_NOT_IMPLEMENTED_ERROR_MSG = "The feature '{feature_name}' is not yet implemented."
+class FeatureErrorMessages:
+    FEATURE_NOT_IMPLEMENTED = "The feature '{feature_name}' is not yet implemented."

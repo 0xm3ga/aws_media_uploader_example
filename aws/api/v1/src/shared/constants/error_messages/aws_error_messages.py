@@ -1,1 +1,2 @@
-NO_AWS_CREDENTIALS_MSG = "No AWS credentials found"
+class AwsErrorMessages:
+    NO_AWS_CREDENTIALS = "No AWS credentials found"
