@@ -1,0 +1,11 @@
+{
+  "queryStringParameters": {},
+  "pathParameters": {
+    "invalid_type_param": 100
+  },
+  "requestContext": {
+    "authorizer": {
+      "claims": {}
+    }
+  }
+}

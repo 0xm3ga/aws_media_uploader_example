@@ -6,8 +6,12 @@ from .base_exceptions import CustomException
 
 
 class MissingParameterError(CustomException):
+    """Exception raised for missing parameter error."""
+
     def __init__(self, parameter: str):
-        super().__init__(ValidationErrorMessages.MISSING_PARAMETER.format(parameter=parameter))
+        self.parameter = parameter
+        self.message = ValidationErrorMessages.MISSING_PARAMETER.format(parameter=parameter)
+        super().__init__(self.message)
 
 
 class InvalidTypeError(CustomException):
