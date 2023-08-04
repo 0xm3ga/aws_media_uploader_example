@@ -28,7 +28,12 @@ class Environment:
                 self.fetch_variable(var)
             except EnvironmentVariableError:
                 missing_vars.append(var)
-                logger.error(EnvironmentErrorMessages.MISSING_ENV_VARS.format(var))
 
+        # If there are missing variables, raise an error
         if missing_vars:
+            logger.error(
+                EnvironmentErrorMessages.MISSING_ENV_VARS.format(
+                    missing_vars=", ".join(missing_vars)
+                )
+            )
             raise MissingEnvironmentVariableError(missing_vars)
