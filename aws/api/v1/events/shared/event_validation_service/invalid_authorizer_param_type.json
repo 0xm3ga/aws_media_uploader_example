@@ -1,0 +1,15 @@
+{
+  "queryStringParameters": {
+    "valid_param": "value"
+  },
+  "pathParameters": {
+    "valid_path_param": "value"
+  },
+  "requestContext": {
+    "authorizer": {
+      "claims": {
+        "cognito:valid_claim": 123
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "queryStringParameters": {},
+  "pathParameters": {},
+  "requestContext": {
+    "authorizer": {
+      "claims": {}
+    }
+  }
+}
