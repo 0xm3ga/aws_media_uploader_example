@@ -2,8 +2,8 @@ import logging
 from typing import Any, Set
 
 from shared.constants.error_messages import ProcessingErrorMessages
-from shared.constants.media_constants import ImageFormat, ImageSize, VideoFormat, VideoSize
 from shared.exceptions import InvalidParameterError, UnsupportedExtensionError, UnsupportedSizeError
+from shared.media import ImageFormat, ImageSize, VideoFormat, VideoSize
 
 logging.basicConfig(level=logging.DEBUG)
 
