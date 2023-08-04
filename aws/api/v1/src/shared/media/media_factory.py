@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from shared.constants.media_constants import ImageMedia, MediaFormat, MediaType, VideoMedia
+from shared.media import ImageMedia, MediaFormat, MediaType, VideoMedia
 
 
 class MediaFactory:
