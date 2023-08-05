@@ -1,6 +1,9 @@
 from typing import Tuple
 
-from shared.media import ImageMedia, MediaFormat, MediaType, VideoMedia
+from shared.media.base import MediaFormatUtils
+from shared.media.constants import MediaType
+from shared.media.image import ImageMedia
+from shared.media.video import VideoMedia
 
 
 class MediaFactory:
@@ -15,7 +18,7 @@ class MediaFactory:
 
     @staticmethod
     def _validate_content_type(content_type: str):
-        if content_type not in MediaFormat.allowed_content_types():
+        if content_type not in MediaFormatUtils.allowed_content_types():
             raise ValueError("Invalid media type")
 
     @staticmethod
