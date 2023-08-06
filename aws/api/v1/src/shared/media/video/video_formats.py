@@ -32,7 +32,3 @@ class VideoFormat:
         MediaFormatUtils.is_extension_allowed(extension=ext, media_type=cls.media_type)
         extension = Extension[ext.upper()]
         return cls(extension=extension, content_type=f"{cls.media_type.value}/{extension.value}")
-
-
-vfs = VideoFormats()
-print(vfs.media_type)
