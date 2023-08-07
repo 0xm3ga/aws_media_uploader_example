@@ -15,3 +15,15 @@ class InvalidImageSizeError(CustomException):
 
     def __init__(self, size: str):
         super().__init__(ProcessingErrorMessages.UNSUPPORTED_SIZE.format(size))
+
+
+class InvalidMediaTypeError(ValueError):
+    pass
+
+
+class InvalidExtensionError(ValueError):
+    pass
+
+
+class InvalidContentTypeError(ValueError):
+    pass
