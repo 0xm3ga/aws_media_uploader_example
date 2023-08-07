@@ -20,6 +20,7 @@ def load_event(filename: str):
         return json.load(f)
 
 
+# ===================== FIXTURES =====================
 @pytest.fixture
 def event(request):
     return load_event(request.param)
@@ -32,7 +33,19 @@ def validator_with_mocked_logger(event):
     return validator, validator.logger
 
 
-@pytest.mark.parametrize("event", ["missing_query_string_param.json"], indirect=True)
+# ====== CONSTANTS FOR PARAMETRIZATION ============================================
+EVENT_NAMES = {
+    "MISSING_QUERY": "missing_query_string_param.json",
+    "VALID": "valid_event.json",
+    "INVALID_QUERY_TYPE": "invalid_query_string_param_type.json",
+    "MISSING_PATH": "missing_path_param.json",
+    "INVALID_PATH_TYPE": "invalid_path_param_type.json",
+    "MISSING_AUTHORIZER": "missing_authorizer_param.json",
+}
+
+
+# ====== TESTS: Query String Parameter ============================================
+@pytest.mark.parametrize("event", [EVENT_NAMES["MISSING_QUERY"]], indirect=True)
 def test_get_query_string_parameter_missing(validator_with_mocked_logger):
     validator, mock_logger = validator_with_mocked_logger
     with pytest.raises(MissingParameterError) as excinfo:
@@ -47,7 +60,7 @@ def test_get_query_string_parameter_missing(validator_with_mocked_logger):
     mock_logger.error.assert_called_once_with(expected_message)
 
 
-@pytest.mark.parametrize("event", ["valid_event.json"], indirect=True)
+@pytest.mark.parametrize("event", [EVENT_NAMES["VALID"]], indirect=True)
 def test_get_query_string_parameter_exists(validator_with_mocked_logger):
     validator, mock_logger = validator_with_mocked_logger
 
@@ -55,7 +68,7 @@ def test_get_query_string_parameter_exists(validator_with_mocked_logger):
     mock_logger.info.assert_called_once_with(VALIDATION_SUCCESSFUL.format(parameter="valid_param"))
 
 
-@pytest.mark.parametrize("event", ["invalid_query_string_param_type.json"], indirect=True)
+@pytest.mark.parametrize("event", [EVENT_NAMES["INVALID_QUERY_TYPE"]], indirect=True)
 def test_get_query_string_parameter_wrong_type(validator_with_mocked_logger):
     validator, mock_logger = validator_with_mocked_logger
     with pytest.raises(InvalidTypeError):
@@ -68,7 +81,7 @@ def test_get_query_string_parameter_wrong_type(validator_with_mocked_logger):
     mock_logger.error.assert_called_once_with(expected_message)
 
 
-@pytest.mark.parametrize("event", ["valid_event.json"], indirect=True)
+@pytest.mark.parametrize("event", [EVENT_NAMES["VALID"]], indirect=True)
 def test_get_query_string_parameter_not_in_allowed_values(validator_with_mocked_logger):
     validator, mock_logger = validator_with_mocked_logger
     with pytest.raises(InvalidValueError):
@@ -84,7 +97,8 @@ def test_get_query_string_parameter_not_in_allowed_values(validator_with_mocked_
     mock_logger.error.assert_called_once_with(expected_message)
 
 
-@pytest.mark.parametrize("event", ["missing_path_param.json"], indirect=True)
+# ====== TESTS: Path Parameter ====================================================
+@pytest.mark.parametrize("event", [EVENT_NAMES["MISSING_PATH"]], indirect=True)
 def test_get_path_parameter_missing(validator_with_mocked_logger):
     validator, mock_logger = validator_with_mocked_logger
     with pytest.raises(MissingParameterError):
@@ -93,13 +107,13 @@ def test_get_path_parameter_missing(validator_with_mocked_logger):
     mock_logger.error.assert_called_once_with(expected_message)
 
 
-@pytest.mark.parametrize("event", ["valid_event.json"], indirect=True)
+@pytest.mark.parametrize("event", [EVENT_NAMES["VALID"]], indirect=True)
 def test_get_path_parameter_exists(validator_with_mocked_logger):
     validator, mock_logger = validator_with_mocked_logger
     assert validator.get_path_parameter("valid_param") == "value"
 
 
-@pytest.mark.parametrize("event", ["invalid_path_param_type.json"], indirect=True)
+@pytest.mark.parametrize("event", [EVENT_NAMES["INVALID_PATH_TYPE"]], indirect=True)
 def test_get_path_parameter_wrong_type(validator_with_mocked_logger):
     validator, mock_logger = validator_with_mocked_logger
     with pytest.raises(InvalidTypeError):
@@ -112,7 +126,7 @@ def test_get_path_parameter_wrong_type(validator_with_mocked_logger):
     mock_logger.error.assert_called_once_with(expected_message)
 
 
-@pytest.mark.parametrize("event", ["valid_event.json"], indirect=True)
+@pytest.mark.parametrize("event", [EVENT_NAMES["VALID"]], indirect=True)
 def test_get_path_parameter_not_in_allowed_values(validator_with_mocked_logger):
     validator, mock_logger = validator_with_mocked_logger
     with pytest.raises(InvalidValueError):
@@ -128,7 +142,8 @@ def test_get_path_parameter_not_in_allowed_values(validator_with_mocked_logger):
     mock_logger.error.assert_called_once_with(expected_message)
 
 
-@pytest.mark.parametrize("event", ["missing_authorizer_param.json"], indirect=True)
+# ====== TESTS: Authorizer Parameter ==============================================
+@pytest.mark.parametrize("event", [EVENT_NAMES["MISSING_AUTHORIZER"]], indirect=True)
 def test_get_authorizer_parameter_missing(validator_with_mocked_logger):
     validator, mock_logger = validator_with_mocked_logger
     with pytest.raises(UnauthorizedError):
@@ -137,7 +152,7 @@ def test_get_authorizer_parameter_missing(validator_with_mocked_logger):
     mock_logger.error.assert_any_call(expected_message)
 
 
-@pytest.mark.parametrize("event", ["valid_event.json"], indirect=True)
+@pytest.mark.parametrize("event", [EVENT_NAMES["VALID"]], indirect=True)
 def test_get_authorizer_parameter_exists(validator_with_mocked_logger):
     validator, mock_logger = validator_with_mocked_logger
     assert validator.get_authorizer_parameter("valid_param") == "value"
