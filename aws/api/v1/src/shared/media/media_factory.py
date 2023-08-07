@@ -30,7 +30,9 @@ class MediaFactory:
         media_class: Union[ImageMedia, VideoMedia] = self.media_creators.get(media_type, None)
 
         if not media_class:
-            self.logger.error(MediaErrorMessages.INVALID_CONTENT_TYPE.format(content_type_str))
+            self.logger.error(
+                MediaErrorMessages.INVALID_CONTENT_TYPE.format(content_type=content_type_str)
+            )
             raise InvalidContentTypeError
         return media_class
 
@@ -40,6 +42,6 @@ class MediaFactory:
         media_class: Union[ImageMedia, VideoMedia] = self.media_creators.get(media_type, None)
 
         if not media_class:
-            self.logger.error(MediaErrorMessages.INVALID_EXTENSION.format(extension_str))
+            self.logger.error(MediaErrorMessages.INVALID_EXTENSION.format(extension=extension_str))
             raise InvalidExtensionError
         return media_class

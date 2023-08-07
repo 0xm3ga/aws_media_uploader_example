@@ -14,10 +14,8 @@ class MediaFormatUtils:
     @staticmethod
     def allowed_content_types(media_type: Optional[MediaType] = None) -> Set[str]:
         """Get the allowed content types for the specified media type."""
-        if media_type and media_type not in FORMATS:
-            error_msg = MediaErrorMessages.UNSUPPORTED_MEDIA_TYPE.format(
-                media_type=media_type.value
-            )
+        if media_type and (media_type not in FORMATS):
+            error_msg = MediaErrorMessages.UNSUPPORTED_MEDIA_TYPE.format(media_type=media_type)
             logger.error(error_msg)
             raise InvalidMediaTypeError(error_msg)
 
@@ -33,9 +31,7 @@ class MediaFormatUtils:
     def allowed_extensions(media_type: Optional[MediaType] = None) -> Set[str]:
         """Get the allowed extensions for the specified media type."""
         if media_type and media_type not in FORMATS:
-            error_msg = MediaErrorMessages.UNSUPPORTED_MEDIA_TYPE.format(
-                media_type=media_type.value
-            )
+            error_msg = MediaErrorMessages.UNSUPPORTED_MEDIA_TYPE.format(media_type=media_type)
             logger.error(error_msg)
             raise InvalidMediaTypeError(error_msg)
 
@@ -46,6 +42,7 @@ class MediaFormatUtils:
     @staticmethod
     def is_extension_allowed(extension: str, media_type: Optional[MediaType] = None) -> bool:
         """Return whether a given extension is allowed for the specified media type."""
+        extension = EXTENSION_ALIAS_MAP.get(extension, extension)
         return extension in MediaFormatUtils.allowed_extensions(media_type=media_type)
 
     @staticmethod
@@ -57,13 +54,11 @@ class MediaFormatUtils:
     def get_extension(media_type: MediaType, extension: Extension) -> str:
         """Retrieve the file extension for the specified media type and format name."""
         if media_type not in FORMATS:
-            error_msg = MediaErrorMessages.UNSUPPORTED_MEDIA_TYPE.format(
-                media_type=media_type.value
-            )
+            error_msg = MediaErrorMessages.UNSUPPORTED_MEDIA_TYPE.format(media_type=media_type)
             logger.error(error_msg)
             raise InvalidMediaTypeError(error_msg)
         if extension not in FORMATS[media_type]:
-            error_msg = MediaErrorMessages.INVALID_EXTENSION.format(extension=extension.value)
+            error_msg = MediaErrorMessages.INVALID_EXTENSION.format(extension=extension)
             logger.error(error_msg)
             raise InvalidExtensionError(error_msg)
 
@@ -72,6 +67,11 @@ class MediaFormatUtils:
     @staticmethod
     def get_content_type(media_type: MediaType, extension: Extension) -> str:
         """Return the content type for the given media type and format name."""
+        if type(media_type) != MediaType:
+            error_msg = MediaErrorMessages.UNSUPPORTED_MEDIA_TYPE.format(media_type=media_type)
+            logger.error(error_msg)
+            raise InvalidMediaTypeError(error_msg)
+
         return f"{media_type.value}/{MediaFormatUtils.get_extension(media_type, extension)}"
 
     @staticmethod
@@ -83,19 +83,22 @@ class MediaFormatUtils:
             if extension in extensions:
                 return media_type
 
-        error_msg = MediaErrorMessages.INVALID_EXTENSION.format(extension=extension.value)
+        error_msg = MediaErrorMessages.INVALID_EXTENSION.format(extension=extension)
         logger.error(error_msg)
         raise InvalidExtensionError(error_msg)
 
     @staticmethod
     def extract_parts_from_content_type(content_type: str) -> Tuple[str, str]:
         """Extract media type and extension strings from a content type."""
-        if not content_type:
-            logger.error(MediaErrorMessages.EMPTY_CONTENT_TYPE)
-            raise ValueError(MediaErrorMessages.EMPTY_CONTENT_TYPE)
-
         try:
+            if not content_type:
+                logger.error(MediaErrorMessages.EMPTY_CONTENT_TYPE)
+                raise ValueError
+
             media_type_str, extension_str = content_type.split("/")
+            if not media_type_str or not extension_str:
+                raise ValueError
+
             return media_type_str, extension_str
         except ValueError:
             error_msg = MediaErrorMessages.INVALID_CONTENT_TYPE.format(content_type=content_type)
@@ -119,6 +122,7 @@ class MediaFormatUtils:
         """
         Convert an extension string to its Extension enum, raising an error for invalid strings.
         """
+        extension_str = str(extension_str)
         extension_str = EXTENSION_ALIAS_MAP.get(extension_str.lower(), extension_str.lower())
         try:
             return Extension[extension_str.upper()]

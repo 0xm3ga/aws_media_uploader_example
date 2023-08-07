@@ -11,15 +11,30 @@ from aws.api.v1.src.shared.services.environment_service import (
     MissingEnvironmentVariableError,
 )
 
+# ===================== CONSTANTS =====================
+REQUIRED_VARS_TEST_INPUTS = [
+    (["EXISTING_VAR"], ["EXISTING_VAR", "NON_EXISTING_VAR"], ["NON_EXISTING_VAR"]),
+    (
+        [],
+        ["NON_EXISTING_VAR_1", "NON_EXISTING_VAR_2"],
+        ["NON_EXISTING_VAR_1", "NON_EXISTING_VAR_2"],
+    ),
+    (["IRRELEVANT_VAR"], ["NON_EXISTING_VAR"], ["NON_EXISTING_VAR"]),
+]
 
+
+# ===================== FIXTURES =====================
 @pytest.fixture
 def env_with_mocked_logger():
+    """Fixture to provide an Environment instance with a mocked logger for tests."""
     env = Environment([])
     env.logger = MagicMock()
     return env, env.logger
 
 
+# ===================== TESTS: FETCH VARIABLE =====================
 def test_fetch_variable_existing(env_with_mocked_logger):
+    """Test fetching an existing environment variable."""
     env, mock_logger = env_with_mocked_logger
     with patch.dict(os.environ, {"EXISTING_VAR": "test_value"}):
         assert env.fetch_variable("EXISTING_VAR") == "test_value"
@@ -29,6 +44,7 @@ def test_fetch_variable_existing(env_with_mocked_logger):
 
 
 def test_fetch_variable_non_existing(env_with_mocked_logger):
+    """Test fetching a non-existing environment variable."""
     env, mock_logger = env_with_mocked_logger
     with pytest.raises(EnvironmentVariableError) as excinfo:
         env.fetch_variable("NON_EXISTING_VAR")
@@ -37,7 +53,9 @@ def test_fetch_variable_non_existing(env_with_mocked_logger):
     mock_logger.error.assert_called_once_with(expected_message)
 
 
+# ===================== TESTS: FETCH REQUIRED VARIABLES =====================
 def test_fetch_required_variables_all_exist(env_with_mocked_logger):
+    """Test fetching all required environment variables when they exist."""
     env, mock_logger = env_with_mocked_logger
     with patch.dict(os.environ, {"EXISTING_VAR": "test_value"}):
         env.required_vars.append("EXISTING_VAR")
@@ -46,21 +64,11 @@ def test_fetch_required_variables_all_exist(env_with_mocked_logger):
         mock_logger.info.assert_called_with(EnvironmentInfoMessages.ALL_ENV_VARS_FETCHED)
 
 
-@pytest.mark.parametrize(
-    "existing_vars, required_vars, missing_vars",
-    [
-        (["EXISTING_VAR"], ["EXISTING_VAR", "NON_EXISTING_VAR"], ["NON_EXISTING_VAR"]),
-        (
-            [],
-            ["NON_EXISTING_VAR_1", "NON_EXISTING_VAR_2"],
-            ["NON_EXISTING_VAR_1", "NON_EXISTING_VAR_2"],
-        ),
-        (["IRRELEVANT_VAR"], ["NON_EXISTING_VAR"], ["NON_EXISTING_VAR"]),
-    ],
-)
+@pytest.mark.parametrize("existing_vars, required_vars, missing_vars", REQUIRED_VARS_TEST_INPUTS)
 def test_fetch_required_variables_missing(
     env_with_mocked_logger, existing_vars, required_vars, missing_vars
 ):
+    """Test fetching required environment variables with some missing."""
     env, mock_logger = env_with_mocked_logger
     with patch.dict(os.environ, {var: "test_value" for var in existing_vars}):
         env.required_vars = required_vars
