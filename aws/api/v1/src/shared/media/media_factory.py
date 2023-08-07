@@ -1,63 +1,45 @@
-from typing import Tuple
+import logging
+from typing import Union
 
+from shared.constants.error_messages import MediaErrorMessages
+from shared.exceptions import InvalidContentTypeError, InvalidExtensionError
 from shared.media.base import MediaFormatUtils
-from shared.media.constants import EXTENSION_ALIAS_MAP, MediaType
+from shared.media.constants import MediaType
 from shared.media.image import ImageMedia
 from shared.media.video import VideoMedia
 
 
 class MediaFactory:
-    @staticmethod
-    def _parse_content_type(content_type: str) -> Tuple[str, str]:
-        try:
-            media_type, extension = content_type.split("/")
-            extension = EXTENSION_ALIAS_MAP.get(extension.lower(), extension.lower())
-        except Exception:
-            raise ValueError("Invalid media type")
+    def __init__(self):
+        self.media_format_utils = MediaFormatUtils()
+        self.media_creators = {
+            MediaType.IMAGE: ImageMedia,
+            MediaType.VIDEO: VideoMedia,
+        }
 
-        return media_type, extension
+    @property
+    def logger(self):
+        if not hasattr(self, "_logger"):
+            self._logger = logging.getLogger(__name__ + "." + "MediaFactory")
+        return self._logger
 
-    @staticmethod
-    def _validate_content_type(content_type: str):
-        if not MediaFormatUtils.is_content_type_allowed(content_type):
-            raise ValueError("Invalid media type")
+    def create_media_from_content_type(
+        self, content_type_str: str
+    ) -> Union[ImageMedia, VideoMedia]:
+        media_type, _ = self.media_format_utils.parse_content_type(content_type_str)
+        media_class: Union[ImageMedia, VideoMedia] = self.media_creators.get(media_type, None)
 
-    @staticmethod
-    def _validate_extension(extension: str):
-        if not MediaFormatUtils.is_extension_allowed(extension):
-            raise ValueError("Invalid extension")
+        if not media_class:
+            self.logger.error(MediaErrorMessages.INVALID_CONTENT_TYPE.format(content_type_str))
+            raise InvalidContentTypeError
+        return media_class
 
-    @staticmethod
-    def create_media(content_type: str):
-        # validating content type
-        MediaFactory._validate_content_type(content_type)
+    def create_media_from_extension(self, extension_str: str) -> Union[ImageMedia, VideoMedia]:
+        extension = self.media_format_utils.convert_str_to_extension(extension_str)
+        media_type = self.media_format_utils.map_extension_to_media_type(extension)
+        media_class: Union[ImageMedia, VideoMedia] = self.media_creators.get(media_type, None)
 
-        # parsing content type
-        media_type, _ = MediaFactory._parse_content_type(content_type)
-
-        # selecting media class
-        if media_type == MediaType.IMAGE.value:
-            return ImageMedia(content_type)
-        elif media_type == MediaType.VIDEO.value:
-            return VideoMedia(content_type)
-        else:
-            raise ValueError("Invalid media type")
-
-    @staticmethod
-    def create_media_from_extension(extension: str):
-        # validating extension
-        extension = EXTENSION_ALIAS_MAP.get(extension.lower(), extension.lower())
-        MediaFactory._validate_extension(extension)
-
-        # mapping extension to media type
-        media_type = MediaFormatUtils.map_extension_to_media_type(extension)
-
-        # constructing content type
-        content_type = f"{media_type}/{extension}"
-
-        # using the previous function to get the media instance
-        return MediaFactory.create_media(content_type)
-
-
-m = MediaFactory.create_media_from_extension("jpg")
-print(m.content_type)
+        if not media_class:
+            self.logger.error(MediaErrorMessages.INVALID_EXTENSION.format(extension_str))
+            raise InvalidExtensionError
+        return media_class

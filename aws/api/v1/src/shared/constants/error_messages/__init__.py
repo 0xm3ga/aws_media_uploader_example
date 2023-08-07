@@ -6,6 +6,7 @@ from .env_error_messages import *  # noqa
 from .feature_error_messages import *  # noqa
 from .general_error_messages import *  # noqa
 from .http_error_messages import *  # noqa
+from .media_error_messages import *  # noqa
 from .processing_error_messages import *  # noqa
 from .rds_error_messages import *  # noqa
 from .validation_error_messages import *  # noqa
