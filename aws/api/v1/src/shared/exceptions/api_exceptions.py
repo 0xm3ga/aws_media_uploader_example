@@ -1,9 +1,7 @@
 from shared.constants.error_messages import S3ErrorMessages
 
-from .base_exceptions import CustomException
 
-
-class ObjectNotFoundError(CustomException):
+class ObjectNotFoundError(Exception):
     """Exception raised when an expected object is not found."""
 
     def __init__(self, message=S3ErrorMessages.OBJECT_NOT_FOUND):
