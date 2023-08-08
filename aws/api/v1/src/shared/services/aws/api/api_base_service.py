@@ -31,6 +31,7 @@ class ApiBaseService:
     @classmethod
     def create_redirect(cls, status_code: HTTPStatus, location: str) -> Dict[str, Any]:
         """Creates a standard HTTP redirect response."""
+        location = str(location)
         logger.info(
             ApiLogMessages.REDIRECT_CREATED.format(status=status_code.value, location=location)
         )
