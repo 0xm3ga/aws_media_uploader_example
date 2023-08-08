@@ -10,7 +10,7 @@ from shared.constants.error_messages import (
     ProcessingErrorMessages,
     S3ErrorMessages,
 )
-from shared.constants.media_constants.media import MediaFormat, MediaSize
+from shared.media.base import MediaFormatUtils, MediaSizeUtils
 from shared.services.aws.api.api_base_service import ApiBaseService
 from shared.services.environment_service import Environment
 from shared.services.event_validation_service import EventValidator
@@ -32,14 +32,14 @@ def extract_and_validate_event(event):
         "size",
         optional=False,
         expected_type=str,
-        allowed_values=MediaSize.allowed_sizes(),
+        allowed_values=MediaSizeUtils.allowed_sizes(),
     )
 
     extension = validator.get_query_string_parameter(
         "extension",
         optional=False,
         expected_type=str,
-        allowed_values=MediaFormat.allowed_extensions(),
+        allowed_values=MediaFormatUtils.allowed_extensions(),
     )
 
     return filename, size, extension

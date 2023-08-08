@@ -4,12 +4,12 @@ from http import HTTPStatus
 import shared.exceptions as ex
 from botocore.exceptions import NoCredentialsError
 from shared.constants.error_messages import HttpErrorMessages
-from shared.constants.media_constants import MediaFormat
+from shared.media.base import MediaFormatUtils
+from shared.media.media_factory import MediaFactory
 from shared.services.aws.api.api_base_service import ApiBaseService
 from shared.services.aws.s3.s3_presigned_service import S3PresignService
 from shared.services.environment_service import Environment
 from shared.services.event_validation_service import EventValidator
-from shared.utils.media_factory import MediaFactory
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -32,10 +32,10 @@ def lambda_handler(event, context):
             "content_type",
             optional=False,
             expected_type=str,
-            allowed_values=MediaFormat.allowed_content_types(),
+            allowed_values=MediaFormatUtils.allowed_content_types(),
         )
 
-        media = MediaFactory.create_media(content_type)
+        media = MediaFactory().create_media_from_content_type(content_type)
 
         # generating presigned url
         s3_presign_service = S3PresignService()
