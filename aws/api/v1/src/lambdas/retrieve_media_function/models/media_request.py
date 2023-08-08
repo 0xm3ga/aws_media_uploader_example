@@ -3,10 +3,10 @@ from typing import Tuple, Union
 
 import shared.exceptions as ex
 from factories.media_processor_factory import MediaProcessorFactory
-from shared.constants.media_constants import ImageMedia, MediaFormat, MediaSize, VideoMedia
+from shared.media.base import ImageMedia, MediaFormatUtils, MediaSizeUtils, VideoMedia
+from shared.media.media_factory import MediaFactory
 from shared.services.aws.rds.rds_service import RdsBaseService
 from shared.services.aws.s3.s3_base_service import S3BaseService
-from shared.utils.media_factory import MediaFactory
 
 logger = logging.getLogger(__name__)
 
@@ -19,10 +19,10 @@ class MediaRequest:
         self.raw_media_bucket = raw_media_bucket
         self.domain_name = domain_name
 
-    def process(self, filename: str, size: str, extension: str) -> str:
+    def process(self, filename: str, size: str, extension_str: str) -> str:
         # validate inputs
-        size = MediaSize.validate_size(size)
-        extension = MediaFormat.validate_extension(extension)
+        size = MediaSizeUtils.validate_size(size)
+        extension = MediaFormatUtils.convert_str_to_extension(str(extension_str))
 
         # construct processed key
         processed_key = self._construct_processed_key(filename, size, extension)
@@ -31,7 +31,7 @@ class MediaRequest:
         if self._check_object_exists(self.processed_media_bucket, processed_key):
             # get info to construct raw key
             username, content_type = self._fetch_media_info(filename)
-            media = MediaFactory.create_media(content_type)  # TODO: refactor
+            media = MediaFactory().create_media_from_content_type(content_type)
 
             # check if exists in raw bucket
             raw_key = self._construct_raw_key(filename, username, media.s3_prefix)

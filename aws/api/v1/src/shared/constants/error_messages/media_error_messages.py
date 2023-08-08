@@ -18,3 +18,9 @@ class MediaErrorMessages:
     INVALID_SIZE = "Invalid size provided."
     INVALID_ASPECT_RATIO = "Invalid aspect ratio provided."
     INVALID_MEDIA_TYPE = "Invalid media type provided."
+    UNEXPECTED_ERROR_FROM_EXTENSION = (
+        "Unexpected error when creating MediaFormat from extension {extension}: {e}"
+    )
+    UNEXPECTED_ERROR_FROM_CONTENT_TYPE = (
+        "Unexpected error when creating MediaFormat from content_type {content_type}: {e}"
+    )
