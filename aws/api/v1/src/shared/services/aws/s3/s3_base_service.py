@@ -17,16 +17,21 @@ class S3BaseService:
         """Check if an object exists in the S3 bucket."""
         try:
             self.s3_client.head_object(Bucket=bucket, Key=key)
-            logger.info(S3LogMessages.OBJECT_FOUND.format(key, bucket))
+            logger.info(S3LogMessages.OBJECT_FOUND.format(key=key, bucket=bucket))
             return True
         except ClientError as e:
             error_code = e.response["Error"]["Code"]
 
             if error_code == HTTPStatus.NOT_FOUND:
-                logger.warning(S3ErrorMessages.OBJECT_NOT_FOUND.format(key, bucket))
+                logger.warning(S3ErrorMessages.OBJECT_NOT_FOUND.format(key=key, bucket=bucket))
                 return False
             else:
-                logger.error(S3ErrorMessages.UNEXPECTED_ERROR.format(error_code, e))
+                logger.error(
+                    S3ErrorMessages.UNEXPECTED_ERROR.format(
+                        error_code=error_code,
+                        error=str(e),
+                    )
+                )
                 raise
 
     @staticmethod
@@ -55,7 +60,7 @@ class S3BaseService:
             raise TypeError(S3ErrorMessages.INVALID_PARAM_TYPE)
 
         raw_media_key = f"{username}/{s3_prefix}/{filename}"
-        logger.info(S3LogMessages.GENERATED_S3_KEY.format(raw_media_key, username))
+        logger.info(S3LogMessages.GENERATED_S3_KEY.format(key=raw_media_key, username=username))
         return raw_media_key
 
     @staticmethod

@@ -4,7 +4,7 @@ from typing import Tuple, Union
 
 from shared.constants.error_messages import S3ErrorMessages
 from shared.constants.log_messages import S3LogMessages
-from shared.constants.media_constants import ImageMedia, VideoMedia
+from shared.media.base import ImageMedia, VideoMedia
 from shared.services.aws.s3.s3_base_service import S3BaseService
 
 logger = logging.getLogger(__name__)
@@ -45,9 +45,9 @@ class S3PresignService(S3BaseService):
                 ExpiresIn=self.URL_EXPIRATION_SECONDS,
             )
         except Exception as e:
-            logger.error(S3ErrorMessages.FAILED_TO_GENERATE_PRESIGNED_URL.format(error=e))
+            logger.error(S3ErrorMessages.FAILED_TO_GENERATE_PRESIGNED_URL.format(error=str(e)))
             raise
 
-        logger.info(S3LogMessages.GENERATED_PRESIGNED_URL.format(filename, raw_bucket_name))
+        logger.info(S3LogMessages.GENERATED_PRESIGNED_URL.format(filename=filename))
 
         return filename, presigned_url
