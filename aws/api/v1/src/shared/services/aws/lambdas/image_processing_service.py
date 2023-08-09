@@ -3,11 +3,12 @@ import logging
 from typing import List
 
 from shared.constants.error_messages import LambdaErrorMessages
-from shared.constants.media_constants import ImageFormat, ImageSize
 from shared.exceptions import MediaProcessingError
+from shared.media.constants import Extension, Size
 from shared.services.aws.lambdas.lambda_invocation_service import LambdaInvoker
 
 logger = logging.getLogger(__name__)
+
 
 # TODO: ref env var
 ARN = "arn:aws:lambda:us-east-1:149501512243:function:aws-media-uploader-example-\
@@ -26,15 +27,15 @@ class ImageProcessingInvoker:
         bucket: str,
         key: str,
         filename: str,
-        format: ImageFormat,
-        sizes: List[ImageSize],
+        extension: Extension,
+        sizes: List[Size],
     ) -> dict:
         """Creates the payload for the Lambda function invocation."""
         return {
             "bucket": bucket,
             "key": key,
             "filename": filename,
-            "format": format.value,
+            "extension": extension.value,
             "sizes": [size.name for size in sizes],
         }
 
@@ -43,11 +44,11 @@ class ImageProcessingInvoker:
         bucket: str,
         key: str,
         filename: str,
-        format: ImageFormat,
-        sizes: List[ImageSize],
+        extension: Extension,
+        sizes: List[Size],
     ) -> dict:
         """Invokes the image processing Lambda function and returns its response."""
-        payload = self._create_payload(bucket, key, filename, format, sizes)
+        payload = self._create_payload(bucket, key, filename, extension, sizes)
         response = self.lambda_invoker.invoke(self.function_arn, payload)
         processed_response = self._extract_and_process_response(response)
         return processed_response
