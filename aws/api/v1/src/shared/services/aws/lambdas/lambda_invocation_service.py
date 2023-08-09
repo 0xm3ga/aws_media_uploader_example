@@ -46,6 +46,8 @@ class LambdaInvoker:
                 raise MediaProcessingError(HttpErrorMessages.RESOURCE_NOT_FOUND)
             else:
                 raise MediaProcessingError(
-                    HttpErrorMessages.UNEXPECTED_STATUS_CODE.format(response["StatusCode"])
+                    HttpErrorMessages.UNEXPECTED_STATUS_CODE.format(
+                        status_code=response["StatusCode"]
+                    )
                 )
         return response
