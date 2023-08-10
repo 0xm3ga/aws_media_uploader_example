@@ -1,9 +1,14 @@
 import logging
 from http import HTTPStatus
 
-import shared.exceptions as ex
-from botocore.exceptions import NoCredentialsError
 from shared.constants.error_messages import HttpErrorMessages
+from shared.exceptions import (
+    InvalidContentTypeError,
+    InvalidTypeError,
+    InvalidValueError,
+    MissingParameterError,
+    UnauthorizedError,
+)
 from shared.media.base import MediaFormatUtils
 from shared.media.media_factory import MediaFactory
 from shared.services.aws.api.api_base_service import ApiBaseService
@@ -19,7 +24,6 @@ def lambda_handler(event, context):
     """Lambda function handler."""
     try:
         # env vars
-        logger.info("Fetching environment variables.")
         env = Environment(["RAW_MEDIA_BUCKET"])
         env.fetch_required_variables()
 
@@ -49,22 +53,23 @@ def lambda_handler(event, context):
             HTTPStatus.OK, {"uploadURL": presigned_url, "filename": filename}
         )
 
-    except NoCredentialsError as e:
-        logger.error(HttpErrorMessages.UNEXPECTED_ERROR.format(e))
-        return ApiBaseService.create_response(
-            HTTPStatus.INTERNAL_SERVER_ERROR, HttpErrorMessages.INTERNAL_SERVER_ERROR
-        )
-
-    except (ex.MissingParameterError, ex.InvalidTypeError, ex.InvalidValueError) as e:
+    except (
+        MissingParameterError,
+        InvalidTypeError,
+        InvalidValueError,
+        InvalidContentTypeError,
+    ) as e:
+        logger.error(HttpErrorMessages.UNEXPECTED_ERROR.format(error=str(e)))
         return ApiBaseService.create_response(HTTPStatus.BAD_REQUEST, str(e))
 
-    except ex.UnauthorizedError:
+    except UnauthorizedError:
         logger.error(HttpErrorMessages.UNAUTHORIZED)
         return ApiBaseService.create_response(
             HTTPStatus.UNAUTHORIZED, HttpErrorMessages.UNAUTHORIZED
         )
 
-    except Exception:
+    except Exception as e:
+        logger.error(HttpErrorMessages.UNEXPECTED_ERROR.format(error=str(e)))
         return ApiBaseService.create_response(
             HTTPStatus.INTERNAL_SERVER_ERROR, HttpErrorMessages.INTERNAL_SERVER_ERROR
         )

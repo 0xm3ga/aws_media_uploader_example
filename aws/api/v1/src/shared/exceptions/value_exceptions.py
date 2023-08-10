@@ -26,7 +26,12 @@ class InvalidExtensionError(ValueError):
 
 
 class InvalidContentTypeError(ValueError):
-    pass
+    def __init__(self, content_type: str):
+        self.content_type = content_type
+        self.message = ProcessingErrorMessages.INVALID_CONTENT_TYPE.format(
+            content_type=content_type
+        )
+        super().__init__(self.message)
 
 
 # Media size

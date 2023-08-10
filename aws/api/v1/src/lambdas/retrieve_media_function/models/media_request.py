@@ -5,7 +5,7 @@ import shared.exceptions as ex
 from factories.media_processor_factory import MediaProcessorFactory
 from shared.media.base import ImageMedia, MediaFormatUtils, MediaSizeUtils, VideoMedia
 from shared.media.media_factory import MediaFactory
-from shared.services.aws.rds.rds_service import RdsBaseService
+from shared.services.aws.rds.rds_base_service import RdsBaseService
 from shared.services.aws.s3.s3_base_service import S3BaseService
 
 logger = logging.getLogger(__name__)
