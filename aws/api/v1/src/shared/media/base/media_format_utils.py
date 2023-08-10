@@ -103,7 +103,7 @@ class MediaFormatUtils:
         except ValueError:
             error_msg = MediaErrorMessages.INVALID_CONTENT_TYPE.format(content_type=content_type)
             logger.error(error_msg)
-            raise InvalidContentTypeError(error_msg)
+            raise InvalidContentTypeError(content_type=content_type)
 
     @staticmethod
     def convert_str_to_media_type(media_type_str: str) -> MediaType:
@@ -145,4 +145,4 @@ class MediaFormatUtils:
         except Exception:
             error_msg = MediaErrorMessages.INVALID_CONTENT_TYPE.format(content_type=content_type)
             logger.error(error_msg)
-            raise InvalidContentTypeError(error_msg)
+            raise InvalidContentTypeError(content_type=content_type)

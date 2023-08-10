@@ -1,0 +1,10 @@
+{
+  "requestContext": {
+    "authorizer": {
+      "claims": {
+        "cognito:username": "value"
+      }
+    }
+  },
+  "queryStringParameters": {}
+}

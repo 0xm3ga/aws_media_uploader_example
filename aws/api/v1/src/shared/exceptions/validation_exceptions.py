@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 
 from shared.constants.error_messages import ValidationErrorMessages
 
@@ -26,7 +26,7 @@ class InvalidTypeError(CustomException):
 
 
 class InvalidValueError(CustomException):
-    def __init__(self, parameter: str, value: Any, allowed_values: Any):
+    def __init__(self, parameter: str, value: Any, allowed_values: Optional[Any] = ""):
         super().__init__(
             ValidationErrorMessages.MISSING_PARAMETER.format(
                 parameter=parameter,

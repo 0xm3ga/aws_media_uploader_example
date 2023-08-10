@@ -29,7 +29,7 @@ class MediaFactory:
             self.logger.error(
                 MediaErrorMessages.INVALID_CONTENT_TYPE.format(content_type=content_type)
             )
-            raise InvalidContentTypeError
+            raise InvalidContentTypeError(content_type=content_type)
         return media_class
 
     def create_media_from_extension(self, extension_str: str) -> Union[ImageMedia, VideoMedia]:

@@ -15,4 +15,4 @@ class ProcessingErrorMessages:
     MISSING_FIELD_IN_RESPONSE_ERROR = "Expected field '{}' is missing in the response."
     NULL_OR_EMPTY_FIELD_IN_RESPONSE_ERROR = "Field '{}' in the response is null or empty."
 
-    INVALID_CONTENT_TYPE = "Invalid content type received: {}"
+    INVALID_CONTENT_TYPE = "Invalid content type received: {content_type}"

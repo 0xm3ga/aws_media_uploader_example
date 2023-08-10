@@ -1,0 +1,12 @@
+{
+  "requestContext": {
+    "authorizer": {
+      "claims": {
+        "cognito:username": "value"
+      }
+    }
+  },
+  "queryStringParameters": {
+    "content_type": 12345
+  }
+}
