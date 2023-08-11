@@ -102,3 +102,17 @@ class MediaSizeUtils:
             raise InvalidSizeError(error_msg)
 
         return MEDIA_DIMENSIONS[media_type][aspect_ratio][size].as_tuple()
+
+    # TODO: add unit tests
+    @staticmethod
+    def convert_str_to_size(size_str: str) -> Size:
+        """
+        Convert a media type string to its MediaType enum, raising an error for invalid strings.
+        """
+        try:
+            size_str = str(size_str)
+            return Size[size_str.upper()]
+        except Exception:
+            error_msg = MediaErrorMessages.UNSUPPORTED_SIZE.format(size_str=size_str)
+            logger.error(error_msg)
+            raise InvalidSizeError(error_msg)

@@ -1,17 +1,13 @@
 import logging
 
-import shared.exceptions as ex
-from processors.image_processor import ImageProcessor
-from processors.media_processor import MediaProcessor
-from processors.video_processor import VideoProcessor
 from shared.constants.error_messages import LambdaErrorMessages
-from shared.constants.media_constants import (
-    ImageFormat,
-    ImageSize,
-    MediaType,
-    VideoFormat,
-    VideoSize,
-)
+from shared.exceptions import UnsupportedFileTypeError
+from shared.media.base import MediaFormatUtils, MediaType
+from shared.media.constants import Extension, Size
+
+from ..processors.image_processor import ImageProcessor
+from ..processors.media_processor import MediaProcessor
+from ..processors.video_processor import VideoProcessor
 
 logger = logging.getLogger(__name__)
 
@@ -24,22 +20,19 @@ class MediaProcessorFactory:
         bucket: str,
         key: str,
         filename: str,
-        extension: str,
-        sizes: list[str],
+        extension: Extension,
+        sizes: list[Size],
         username: str,
-        media_type: MediaType,
     ) -> MediaProcessor:
         """
         Creates and returns an instance of the appropriate media processor based on the file type.
         """
+        media_type = MediaFormatUtils.map_extension_to_media_type(extension)
+
         if media_type == MediaType.IMAGE:
-            image_sizes = [ImageSize[size] for size in sizes]
-            format = ImageFormat[extension]
-            return ImageProcessor(bucket, key, filename, format, image_sizes, username)
+            return ImageProcessor(bucket, key, filename, extension, sizes, username)
         elif media_type == MediaType.VIDEO:
-            video_sizes = [VideoSize[size] for size in sizes]
-            format = VideoFormat[extension]
-            return VideoProcessor(bucket, key, filename, format, video_sizes, username)
+            return VideoProcessor(bucket, key, filename, extension, sizes, username)
         else:
             logger.error(LambdaErrorMessages.ERROR_UNSUPPORTED_FILE_TYPE.format(media_type.value))
-            raise ex.UnsupportedFileTypeError(media_type.value)
+            raise UnsupportedFileTypeError(media_type.value)
