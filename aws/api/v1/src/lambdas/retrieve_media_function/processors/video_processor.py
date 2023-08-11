@@ -1,9 +1,10 @@
 import logging
 from typing import List
 
-from media_processor import MediaProcessor
-from shared.constants.media_constants import VideoFormat, VideoSize
 from shared.exceptions import FeatureNotImplementedError
+from shared.media.constants import Extension, Size
+
+from .media_processor import MediaProcessor
 
 logger = logging.getLogger(__name__)
 
@@ -19,14 +20,14 @@ class VideoProcessor(MediaProcessor):
         bucket: str,
         key: str,
         filename: str,
-        format: VideoFormat,
-        sizes: List[VideoSize],
+        extension: Extension,
+        sizes: List[Size],
         username: str,
     ):
         self.bucket = bucket
         self.key = key
         self.filename = filename
-        self.image_format = format
+        self.extension = extension
         self.sizes = sizes
         self.username = username
         self.feature_name = FEATURE_NAME

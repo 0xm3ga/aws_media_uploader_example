@@ -1,12 +1,13 @@
 import logging
-from typing import Tuple, Union
+from typing import Tuple
 
-import shared.exceptions as ex
-from factories.media_processor_factory import MediaProcessorFactory
-from shared.media.base import ImageMedia, MediaFormatUtils, MediaSizeUtils, VideoMedia
+from shared.exceptions import ObjectNotFoundError
+from shared.media.base import Extension, MediaFormatUtils, MediaSizeUtils, Size
 from shared.media.media_factory import MediaFactory
 from shared.services.aws.rds.rds_base_service import RdsBaseService
 from shared.services.aws.s3.s3_base_service import S3BaseService
+
+from ..factories.media_processor_factory import MediaProcessorFactory
 
 logger = logging.getLogger(__name__)
 
@@ -19,13 +20,13 @@ class MediaRequest:
         self.raw_media_bucket = raw_media_bucket
         self.domain_name = domain_name
 
-    def process(self, filename: str, size: str, extension_str: str) -> str:
+    def process(self, filename: str, size_str: str, extension_str: str) -> str:
         # validate inputs
-        size = MediaSizeUtils.validate_size(size)
+        size = MediaSizeUtils.convert_str_to_size(size_str)
         extension = MediaFormatUtils.convert_str_to_extension(str(extension_str))
 
         # construct processed key
-        processed_key = self._construct_processed_key(filename, size, extension)
+        processed_key = self._construct_processed_key(filename, size.value, extension.value)
 
         # checking if already processed
         if self._check_object_exists(self.processed_media_bucket, processed_key):
@@ -38,7 +39,13 @@ class MediaRequest:
             self._check_object_exists(bucket=self.raw_media_bucket, key=raw_key, required=True)
 
             # process
-            processor = self._create_processor(filename, extension, username, media, raw_key, size)
+            processor = self._create_processor(
+                filename,
+                extension,
+                username,
+                raw_key,
+                size,
+            )
             processor.process()
 
         # return url
@@ -68,18 +75,17 @@ class MediaRequest:
     def _check_object_exists(self, bucket: str, key: str, required: bool = False) -> bool:
         if not self.s3_service.object_exists(bucket=bucket, key=key):
             if required:
-                raise ex.ObjectNotFoundError
+                raise ObjectNotFoundError
             return False
         return True
 
     def _create_processor(
         self,
         filename: str,
-        extension: str,
+        extension: Extension,
         username: str,
-        media: Union[ImageMedia, VideoMedia],
         raw_key: str,
-        size: str,
+        size: Size,
     ):
         return MediaProcessorFactory.create_processor(
             bucket=self.raw_media_bucket,
@@ -88,7 +94,6 @@ class MediaRequest:
             extension=extension,
             sizes=[size],
             username=username,
-            media_type=media.media_type,
         )
 
     def _construct_url(self, key: str) -> str:
