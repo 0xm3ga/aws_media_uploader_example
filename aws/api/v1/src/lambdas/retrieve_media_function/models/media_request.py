@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 class MediaRequest:
     def __init__(self, processed_media_bucket: str, raw_media_bucket: str, domain_name: str):
+        """Initializes the MediaRequest with necessary services and buckets."""
         self.s3_service = S3BaseService()
         self.rds_service = RdsBaseService()
         self.processed_media_bucket = processed_media_bucket
@@ -21,6 +22,7 @@ class MediaRequest:
         self.domain_name = domain_name
 
     def process(self, filename: str, size_str: str, extension_str: str) -> str:
+        """Processes the media and returns its URL."""
         # validate inputs
         size = MediaSizeUtils.convert_str_to_size(size_str)
         extension = MediaFormatUtils.convert_str_to_extension(str(extension_str))
