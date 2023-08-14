@@ -2,7 +2,7 @@ import json
 import logging
 from typing import List
 
-from shared.constants.error_messages import LambdaErrorMessages
+from shared.constants.logging_messages import LambdaMessages
 from shared.exceptions import MediaProcessingError
 from shared.media.constants import Extension, Size
 from shared.services.aws.lambdas.lambda_invocation_service import LambdaInvoker
@@ -57,13 +57,17 @@ class ImageProcessingInvoker:
         try:
             return json.loads(response["Payload"].read())
         except (json.JSONDecodeError, KeyError) as e:
-            logger.error(LambdaErrorMessages.ERROR_PROCESSING_RESPONSE.format(str(e)))
-            raise MediaProcessingError(LambdaErrorMessages.ERROR_PROCESSING_RESPONSE.format(str(e)))
+            logger.error(LambdaMessages.Error.ERROR_PROCESSING_RESPONSE.format(str(e)))
+            raise MediaProcessingError(
+                LambdaMessages.Error.ERROR_PROCESSING_RESPONSE.format(str(e))
+            )
 
     def _check_response_for_errors(self, response: dict):
         if "errorMessage" in response or "FunctionError" in response:
-            logger.error(LambdaErrorMessages.ERROR_DURING_PROCESSING.format(response))
-            raise MediaProcessingError(LambdaErrorMessages.ERROR_DURING_PROCESSING.format(response))
+            logger.error(LambdaMessages.Error.ERROR_DURING_PROCESSING.format(response))
+            raise MediaProcessingError(
+                LambdaMessages.Error.ERROR_DURING_PROCESSING.format(response)
+            )
 
     def _extract_and_process_response(self, response: dict) -> dict:
         """Extracts payload from response and checks for any errors."""

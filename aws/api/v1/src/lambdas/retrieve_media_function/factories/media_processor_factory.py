@@ -1,6 +1,6 @@
 import logging
 
-from shared.constants.error_messages import LambdaErrorMessages
+from shared.constants.logging_messages import LambdaMessages
 from shared.exceptions import UnsupportedFileTypeError
 from shared.media.base import MediaFormatUtils, MediaType
 from shared.media.constants import Extension, Size
@@ -34,5 +34,5 @@ class MediaProcessorFactory:
         elif media_type == MediaType.VIDEO:
             return VideoProcessor(bucket, key, filename, extension, sizes, username)
         else:
-            logger.error(LambdaErrorMessages.ERROR_UNSUPPORTED_FILE_TYPE.format(media_type.value))
+            logger.error(LambdaMessages.Error.ERROR_UNSUPPORTED_FILE_TYPE.format(media_type.value))
             raise UnsupportedFileTypeError(media_type.value)

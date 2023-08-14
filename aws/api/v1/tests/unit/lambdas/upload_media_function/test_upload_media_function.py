@@ -7,7 +7,7 @@ import pytest
 from aws.api.v1.src.lambdas.upload_media_function.app import (
     Environment,
     EventValidator,
-    HttpErrorMessages,
+    HttpMessages,
     InvalidContentTypeError,
     InvalidTypeError,
     InvalidValueError,
@@ -91,9 +91,9 @@ def test_lambda_handler_environment_fetch_var_exceptions(
     body = json.loads(result["body"])
 
     assert result["statusCode"] == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert body == HttpErrorMessages.INTERNAL_SERVER_ERROR
+    assert body == HttpMessages.Error.INTERNAL_SERVER_ERROR
     mock_error_info.assert_called_with(
-        HttpErrorMessages.UNEXPECTED_ERROR.format(error=str(error_message))
+        HttpMessages.Error.UNEXPECTED_ERROR.format(error=str(error_message))
     )
 
 
@@ -115,9 +115,9 @@ def test_lambda_handler_environment_all_vars_exceptions(
     body = json.loads(result["body"])
 
     assert result["statusCode"] == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert body == HttpErrorMessages.INTERNAL_SERVER_ERROR
+    assert body == HttpMessages.Error.INTERNAL_SERVER_ERROR
     mock_error_info.assert_called_with(
-        HttpErrorMessages.UNEXPECTED_ERROR.format(error=str(error_message))
+        HttpMessages.Error.UNEXPECTED_ERROR.format(error=str(error_message))
     )
 
 
@@ -137,8 +137,8 @@ def test_lambda_handler_event_validator_auth_exception(
     body = json.loads(result["body"])
 
     assert result["statusCode"] == HTTPStatus.UNAUTHORIZED
-    assert body == HttpErrorMessages.UNAUTHORIZED
-    mock_error_info.assert_called_with(HttpErrorMessages.UNAUTHORIZED)
+    assert body == HttpMessages.Error.UNAUTHORIZED
+    mock_error_info.assert_called_with(HttpMessages.Error.UNAUTHORIZED)
 
 
 @pytest.mark.parametrize(
@@ -150,13 +150,11 @@ def test_lambda_handler_event_validator_auth_exception(
         ),
         (
             InvalidTypeError(parameter="content_type", actual=int, expected=str),
-            InvalidTypeError(parameter="content_type", actual=int, expected=str).message,
+            InvalidTypeError(parameter="content_type", actual=int, expected=str),
         ),
         (
             InvalidValueError(parameter="content_type", value="invalid_value", allowed_values=None),
-            InvalidValueError(
-                parameter="content_type", value="invalid_value", allowed_values=None
-            ).message,
+            InvalidValueError(parameter="content_type", value="invalid_value", allowed_values=None),
         ),
     ],
 )
@@ -180,7 +178,7 @@ def test_lambda_handler_event_validator_query_string_parameter_exception(
     assert result["statusCode"] == HTTPStatus.BAD_REQUEST
     assert body == error_message
     mock_error_info.assert_called_with(
-        HttpErrorMessages.UNEXPECTED_ERROR.format(error=error_message)
+        HttpMessages.Error.UNEXPECTED_ERROR.format(error=error_message)
     )
 
 
@@ -212,7 +210,7 @@ def test_lambda_handler_media_factory(
     assert result["statusCode"] == HTTPStatus.BAD_REQUEST
     assert body == error_message
     mock_error_info.assert_called_with(
-        HttpErrorMessages.UNEXPECTED_ERROR.format(error=error_message)
+        HttpMessages.Error.UNEXPECTED_ERROR.format(error=error_message)
     )
 
 

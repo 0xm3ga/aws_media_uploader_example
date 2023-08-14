@@ -1,4 +1,4 @@
-from shared.constants.error_messages import S3ErrorMessages
+from shared.constants.logging_messages import S3Messages
 
 
 class BaseS3Error(Exception):
@@ -13,7 +13,7 @@ class PresignedUrlGenerationError(BaseS3Error):
 
     def __init__(self, error):
         self.error = error
-        message = S3ErrorMessages.FAILED_TO_GENERATE_PRESIGNED_URL.format(error=error)
+        message = S3Messages.Error.FAILED_TO_GENERATE_PRESIGNED_URL.format(error=error)
         super().__init__(message)
 
     def __str__(self):

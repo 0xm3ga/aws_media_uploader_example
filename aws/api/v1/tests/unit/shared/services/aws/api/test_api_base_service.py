@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
-from aws.api.v1.src.shared.services.aws.api.api_base_service import ApiBaseService, ApiLogMessages
+from aws.api.v1.src.shared.services.aws.api.api_base_service import ApiBaseService, ApiMessages
 
 # ===================== CONSTANTS =====================
 VALID_MESSAGE_OBJECT = {"message": "Hello, World!"}
@@ -41,7 +41,7 @@ def test_create_response_varied_messages(message, expected_body):
 def test_create_response_logging(mock_logger_info):
     """Test that creating a response logs the correct information."""
     ApiBaseService.create_response(VALID_STATUS_CODE, VALID_MESSAGE_OBJECT)
-    expected_log_message = ApiLogMessages.RESPONSE_CREATED.format(
+    expected_log_message = ApiMessages.Info.RESPONSE_CREATED.format(
         status=VALID_STATUS_CODE, message=json.dumps(VALID_MESSAGE_OBJECT)
     )
     mock_logger_info.assert_called_with(expected_log_message)
@@ -65,7 +65,7 @@ def test_create_redirect_varied_locations(location, expected_location):
 def test_create_redirect_logging(mock_logger_info):
     """Test that creating a redirect logs the correct information."""
     ApiBaseService.create_redirect(VALID_STATUS_CODE, VALID_REDIRECT_LOCATION)
-    expected_log_message = ApiLogMessages.REDIRECT_CREATED.format(
+    expected_log_message = ApiMessages.Info.REDIRECT_CREATED.format(
         status=VALID_STATUS_CODE, location=VALID_REDIRECT_LOCATION
     )
     mock_logger_info.assert_called_with(expected_log_message)

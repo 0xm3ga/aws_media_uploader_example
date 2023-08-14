@@ -6,8 +6,8 @@ from aws.api.v1.src.shared.media.media_factory import (
     ImageMedia,
     InvalidContentTypeError,
     InvalidExtensionError,
-    MediaErrorMessages,
     MediaFactory,
+    MediaMessages,
     MediaType,
     VideoMedia,
 )
@@ -96,7 +96,7 @@ def test_create_media_from_content_type_invalid(media_factory, invalid_content_t
     ):
         with pytest.raises(InvalidContentTypeError) as exception_info:
             media_factory.create_media_from_content_type(invalid_content_type)
-            assert str(exception_info.value) == MediaErrorMessages.INVALID_CONTENT_TYPE.format(
+            assert str(exception_info.value) == MediaMessages.Error.INVALID_CONTENT_TYPE.format(
                 content_type=invalid_content_type
             )
 
@@ -134,7 +134,7 @@ def test_create_media_from_extension_invalid(media_factory, invalid_extension):
     ):
         with pytest.raises(InvalidExtensionError) as exception_info:
             media_factory.create_media_from_extension(invalid_extension)
-            assert str(exception_info.value) == MediaErrorMessages.INVALID_EXTENSION.format(
+            assert str(exception_info.value) == MediaMessages.Error.INVALID_EXTENSION.format(
                 extension=invalid_extension
             )
 

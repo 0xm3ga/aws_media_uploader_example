@@ -1,8 +1,7 @@
 import logging
 from typing import Any, Dict, Optional, Type
 
-from shared.constants.error_messages import ValidationErrorMessages
-from shared.constants.log_messages import AUTHORIZE_SUCCESSFUL, VALIDATION_SUCCESSFUL
+from shared.constants.logging_messages import ValidationMessages
 from shared.exceptions import (
     InvalidTypeError,
     InvalidValueError,
@@ -24,7 +23,7 @@ class EventValidator:
             if optional:
                 return None
             else:
-                self.logger.error(ValidationErrorMessages.MISSING_PARAMETER.format(parameter=key))
+                self.logger.error(ValidationMessages.Error.MISSING_PARAMETER.format(parameter=key))
                 raise MissingParameterError(parameter=key)
 
     def _validate_type(self, value: Any, name: str, expected_type: Optional[Type] = None):
@@ -37,7 +36,7 @@ class EventValidator:
                 f"Value: {value}, Type: {type(value)}, Expected Type: {expected_type}"
             )  # Add this line
             self.logger.error(
-                ValidationErrorMessages.INVALID_TYPE.format(
+                ValidationMessages.Error.INVALID_TYPE.format(
                     parameter=name,
                     actual=type(value).__name__,
                     expected=expected_type.__name__,
@@ -55,7 +54,7 @@ class EventValidator:
 
         if value not in allowed_values:
             self.logger.error(
-                ValidationErrorMessages.PARAMETER_NOT_IN_SET.format(
+                ValidationMessages.Error.PARAMETER_NOT_IN_SET.format(
                     parameter=name,
                     value=value,
                     allowed_values=allowed_values,
@@ -75,7 +74,7 @@ class EventValidator:
         self._validate_type(value, name, expected_type)
         self._validate_value(value, name, allowed_values)
 
-        self.logger.info(VALIDATION_SUCCESSFUL.format(parameter=name))
+        self.logger.info(ValidationMessages.Info.VALIDATION_SUCCESSFUL.format(parameter=name))
         return value
 
     def get_query_string_parameter(
@@ -118,8 +117,8 @@ class EventValidator:
                 optional=optional,
             )
         except MissingParameterError:
-            self.logger.error(ValidationErrorMessages.UNAUTHORIZED)
-            raise UnauthorizedError(ValidationErrorMessages.UNAUTHORIZED)
+            self.logger.error(ValidationMessages.Error.UNAUTHORIZED)
+            raise UnauthorizedError(ValidationMessages.Error.UNAUTHORIZED)
 
-        self.logger.info(AUTHORIZE_SUCCESSFUL.format(parameter=name))
+        self.logger.info(ValidationMessages.Info.AUTHORIZE_SUCCESSFUL.format(parameter=name))
         return value

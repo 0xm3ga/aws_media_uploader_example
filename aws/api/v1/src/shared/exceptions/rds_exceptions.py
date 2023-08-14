@@ -1,4 +1,4 @@
-from shared.constants.error_messages import RdsErrorMessages
+from shared.constants.logging_messages import RdsMessages
 
 from .base_exceptions import CustomException
 
@@ -8,4 +8,4 @@ class RDSCommunicationError(CustomException):
 
     def __init__(self, error: str):
         super().__init__(error)
-        self.message = RdsErrorMessages.RDS_COMMUNICATION_ERROR.format(error=error)
+        self.message = RdsMessages.Error.RDS_COMMUNICATION_ERROR.format(error=error)

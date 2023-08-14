@@ -6,7 +6,7 @@ from botocore.exceptions import BotoCoreError
 from aws.api.v1.src.shared.services.aws.rds.rds_base_service import (
     MissingRequiredRDSVariablesError,
     RdsBaseService,
-    RdsErrorMessages,
+    RdsMessages,
 )
 
 # ===================== CONSTANTS =====================
@@ -69,7 +69,7 @@ def test_fetch_media_info_from_rds_missing_content_type(mock_get_rds_data):
     """Test missing content_type when fetching media info from RDS."""
     with pytest.raises(
         MissingRequiredRDSVariablesError,
-        match=RdsErrorMessages.INVALID_RDS_RESPONSE.format(missing_data="content_type"),
+        match=RdsMessages.Error.INVALID_RDS_RESPONSE.format(missing_data="content_type"),
     ):
         RdsBaseService.fetch_media_info_from_rds(VALID_FILENAME)
 
@@ -82,6 +82,6 @@ def test_fetch_media_info_from_rds_missing_username(mock_get_rds_data):
     """Test missing username when fetching media info from RDS."""
     with pytest.raises(
         MissingRequiredRDSVariablesError,
-        match=RdsErrorMessages.INVALID_RDS_RESPONSE.format(missing_data="username"),
+        match=RdsMessages.Error.INVALID_RDS_RESPONSE.format(missing_data="username"),
     ):
         RdsBaseService.fetch_media_info_from_rds(VALID_FILENAME)

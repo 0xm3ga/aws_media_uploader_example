@@ -7,8 +7,8 @@ import pytest
 from aws.api.v1.src.shared.services.aws.lambdas.image_processing_service import (
     Extension,
     ImageProcessingInvoker,
-    LambdaErrorMessages,
     LambdaInvoker,
+    LambdaMessages,
     MediaProcessingError,
     Size,
 )
@@ -88,7 +88,7 @@ def test_extract_payload_from_response_error(image_processing_invoker):
     with pytest.raises(
         MediaProcessingError,
         match=re.escape(
-            LambdaErrorMessages.ERROR_PROCESSING_RESPONSE.format(str(expected_error_message))
+            LambdaMessages.Error.ERROR_PROCESSING_RESPONSE.format(str(expected_error_message))
         ),
     ):
         image_processing_invoker._extract_payload_from_response(error_response)
@@ -106,6 +106,6 @@ def test_check_response_for_errors_with_error(image_processing_invoker):
     error_response = {"errorMessage": "Sample error message"}
     with pytest.raises(
         MediaProcessingError,
-        match=LambdaErrorMessages.ERROR_DURING_PROCESSING.format(error_response),
+        match=LambdaMessages.Error.ERROR_DURING_PROCESSING.format(error_response),
     ):
         image_processing_invoker._check_response_for_errors(error_response)
