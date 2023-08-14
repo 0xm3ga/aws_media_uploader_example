@@ -4,14 +4,12 @@ from unittest.mock import MagicMock
 import pytest
 
 from aws.api.v1.src.shared.services.event_validation_service import (
-    AUTHORIZE_SUCCESSFUL,
-    VALIDATION_SUCCESSFUL,
     EventValidator,
     InvalidTypeError,
     InvalidValueError,
     MissingParameterError,
     UnauthorizedError,
-    ValidationErrorMessages,
+    ValidationMessages,
 )
 
 
@@ -55,7 +53,7 @@ def test_get_query_string_parameter_missing(validator_with_mocked_logger):
             expected_type=str,
             allowed_values=None,
         )
-    expected_message = ValidationErrorMessages.MISSING_PARAMETER.format(parameter="missing_param")
+    expected_message = ValidationMessages.Error.MISSING_PARAMETER.format(parameter="missing_param")
     assert str(excinfo.value) == expected_message
     mock_logger.error.assert_called_once_with(expected_message)
 
@@ -65,7 +63,9 @@ def test_get_query_string_parameter_exists(validator_with_mocked_logger):
     validator, mock_logger = validator_with_mocked_logger
 
     assert validator.get_query_string_parameter("valid_param") == "value"
-    mock_logger.info.assert_called_once_with(VALIDATION_SUCCESSFUL.format(parameter="valid_param"))
+    mock_logger.info.assert_called_once_with(
+        ValidationMessages.Info.VALIDATION_SUCCESSFUL.format(parameter="valid_param")
+    )
 
 
 @pytest.mark.parametrize("event", [EVENT_NAMES["INVALID_QUERY_TYPE"]], indirect=True)
@@ -73,7 +73,7 @@ def test_get_query_string_parameter_wrong_type(validator_with_mocked_logger):
     validator, mock_logger = validator_with_mocked_logger
     with pytest.raises(InvalidTypeError):
         validator.get_query_string_parameter("invalid_type_param", expected_type=int)
-    expected_message = ValidationErrorMessages.INVALID_TYPE.format(
+    expected_message = ValidationMessages.Error.INVALID_TYPE.format(
         parameter="invalid_type_param",
         actual="str",
         expected="int",
@@ -89,7 +89,7 @@ def test_get_query_string_parameter_not_in_allowed_values(validator_with_mocked_
             "valid_param",
             allowed_values=["other_value"],
         )
-    expected_message = ValidationErrorMessages.PARAMETER_NOT_IN_SET.format(
+    expected_message = ValidationMessages.Error.PARAMETER_NOT_IN_SET.format(
         parameter="valid_param",
         value="value",
         allowed_values="['other_value']",
@@ -103,7 +103,7 @@ def test_get_path_parameter_missing(validator_with_mocked_logger):
     validator, mock_logger = validator_with_mocked_logger
     with pytest.raises(MissingParameterError):
         validator.get_path_parameter("missing_param")
-    expected_message = ValidationErrorMessages.MISSING_PARAMETER.format(parameter="missing_param")
+    expected_message = ValidationMessages.Error.MISSING_PARAMETER.format(parameter="missing_param")
     mock_logger.error.assert_called_once_with(expected_message)
 
 
@@ -118,7 +118,7 @@ def test_get_path_parameter_wrong_type(validator_with_mocked_logger):
     validator, mock_logger = validator_with_mocked_logger
     with pytest.raises(InvalidTypeError):
         validator.get_path_parameter("invalid_type_param", expected_type=str)
-    expected_message = ValidationErrorMessages.INVALID_TYPE.format(
+    expected_message = ValidationMessages.Error.INVALID_TYPE.format(
         parameter="invalid_type_param",
         actual="int",
         expected="str",
@@ -134,7 +134,7 @@ def test_get_path_parameter_not_in_allowed_values(validator_with_mocked_logger):
             "valid_param",
             allowed_values=["other_value"],
         )
-    expected_message = ValidationErrorMessages.PARAMETER_NOT_IN_SET.format(
+    expected_message = ValidationMessages.Error.PARAMETER_NOT_IN_SET.format(
         parameter="valid_param",
         value="value",
         allowed_values="['other_value']",
@@ -148,7 +148,7 @@ def test_get_authorizer_parameter_missing(validator_with_mocked_logger):
     validator, mock_logger = validator_with_mocked_logger
     with pytest.raises(UnauthorizedError):
         validator.get_authorizer_parameter("missing_param")
-    expected_message = ValidationErrorMessages.UNAUTHORIZED
+    expected_message = ValidationMessages.Error.UNAUTHORIZED
     mock_logger.error.assert_any_call(expected_message)
 
 
@@ -156,4 +156,6 @@ def test_get_authorizer_parameter_missing(validator_with_mocked_logger):
 def test_get_authorizer_parameter_exists(validator_with_mocked_logger):
     validator, mock_logger = validator_with_mocked_logger
     assert validator.get_authorizer_parameter("valid_param") == "value"
-    mock_logger.info.assert_any_call(AUTHORIZE_SUCCESSFUL.format(parameter="valid_param"))
+    mock_logger.info.assert_any_call(
+        ValidationMessages.Info.AUTHORIZE_SUCCESSFUL.format(parameter="valid_param")
+    )

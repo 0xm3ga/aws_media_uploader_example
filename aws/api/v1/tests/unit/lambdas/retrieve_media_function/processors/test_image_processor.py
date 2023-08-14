@@ -5,7 +5,7 @@ import pytest
 from aws.api.v1.src.lambdas.retrieve_media_function.processors.image_processor import (
     Extension,
     ImageProcessor,
-    LambdaErrorMessages,
+    LambdaMessages,
     MediaProcessingError,
     Size,
 )
@@ -52,7 +52,8 @@ def test_process_with_error(setup_processor):
     processor = ImageProcessor(bucket, key, filename, extension, sizes, username)
 
     with pytest.raises(
-        MediaProcessingError, match=LambdaErrorMessages.ERROR_DURING_PROCESSING.format(error_msg)
+        MediaProcessingError,
+        match=LambdaMessages.Error.ERROR_DURING_PROCESSING.format(error=error_msg),
     ):
         processor.process()
 

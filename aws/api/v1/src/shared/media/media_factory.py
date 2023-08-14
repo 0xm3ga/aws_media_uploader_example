@@ -1,7 +1,7 @@
 import logging
 from typing import Union
 
-from shared.constants.error_messages import MediaErrorMessages
+from shared.constants.logging_messages import MediaMessages
 from shared.exceptions import InvalidContentTypeError, InvalidExtensionError
 from shared.media.base import ImageMedia, MediaFormatUtils, VideoMedia
 from shared.media.constants import MediaType
@@ -27,7 +27,7 @@ class MediaFactory:
 
         if not media_class:
             self.logger.error(
-                MediaErrorMessages.INVALID_CONTENT_TYPE.format(content_type=content_type)
+                MediaMessages.Error.INVALID_CONTENT_TYPE.format(content_type=content_type)
             )
             raise InvalidContentTypeError(content_type=content_type)
         return media_class
@@ -38,6 +38,6 @@ class MediaFactory:
         media_class: Union[ImageMedia, VideoMedia] = self.media_creators.get(media_type, None)
 
         if not media_class:
-            self.logger.error(MediaErrorMessages.INVALID_EXTENSION.format(extension=extension_str))
+            self.logger.error(MediaMessages.Error.INVALID_EXTENSION.format(extension=extension_str))
             raise InvalidExtensionError
         return media_class

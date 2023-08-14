@@ -5,9 +5,9 @@ import pytest
 from botocore.exceptions import BotoCoreError, ClientError
 
 from aws.api.v1.src.shared.services.aws.lambdas.lambda_invocation_service import (
-    HttpErrorMessages,
-    LambdaErrorMessages,
+    HttpMessages,
     LambdaInvoker,
+    LambdaMessages,
     MediaProcessingError,
 )
 
@@ -36,7 +36,7 @@ def test_invoke_boto_core_error(mock_lambda_client):
 
     with pytest.raises(
         MediaProcessingError,
-        match=LambdaErrorMessages.ERROR_INVOKING_LAMBDA.format(BotoCoreError()),
+        match=LambdaMessages.Error.ERROR_INVOKING_LAMBDA.format(BotoCoreError()),
     ):
         invoker.invoke("fake_arn", {"key": "value"})
 
@@ -49,7 +49,7 @@ def test_invoke_client_error(mock_lambda_client):
 
     with pytest.raises(
         MediaProcessingError,
-        match=re.escape(LambdaErrorMessages.ERROR_INVOKING_LAMBDA.format(error_msg)),
+        match=re.escape(LambdaMessages.Error.ERROR_INVOKING_LAMBDA.format(error_msg)),
     ):
         invoker.invoke("fake_arn", {"key": "value"})
 
@@ -59,7 +59,7 @@ def test_process_response_forbidden(mock_lambda_client):
 
     invoker = LambdaInvoker()
 
-    with pytest.raises(MediaProcessingError, match=HttpErrorMessages.FORBIDDEN):
+    with pytest.raises(MediaProcessingError, match=HttpMessages.Error.FORBIDDEN):
         invoker._process_response(response)
 
 
@@ -68,7 +68,7 @@ def test_process_response_not_found(mock_lambda_client):
 
     invoker = LambdaInvoker()
 
-    with pytest.raises(MediaProcessingError, match=HttpErrorMessages.RESOURCE_NOT_FOUND):
+    with pytest.raises(MediaProcessingError, match=HttpMessages.Error.RESOURCE_NOT_FOUND):
         invoker._process_response(response)
 
 
@@ -79,6 +79,6 @@ def test_process_response_unexpected_status_code(mock_lambda_client):
 
     with pytest.raises(
         MediaProcessingError,
-        match=HttpErrorMessages.UNEXPECTED_STATUS_CODE.format(status_code=response["StatusCode"]),
+        match=HttpMessages.Error.UNEXPECTED_STATUS_CODE.format(status_code=response["StatusCode"]),
     ):
         invoker._process_response(response)

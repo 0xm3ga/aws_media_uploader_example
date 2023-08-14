@@ -1,7 +1,7 @@
 import logging
 from http import HTTPStatus
 
-from shared.constants.error_messages import HttpErrorMessages
+from shared.constants.logging_messages import HttpMessages
 from shared.exceptions import (
     InvalidContentTypeError,
     InvalidTypeError,
@@ -50,7 +50,11 @@ def lambda_handler(event, context):
         )
 
         return ApiBaseService.create_response(
-            HTTPStatus.OK, {"uploadURL": presigned_url, "filename": filename}
+            HTTPStatus.OK,
+            {
+                "uploadURL": presigned_url,
+                "filename": filename,
+            },
         )
 
     except (
@@ -59,17 +63,17 @@ def lambda_handler(event, context):
         InvalidValueError,
         InvalidContentTypeError,
     ) as e:
-        logger.error(HttpErrorMessages.UNEXPECTED_ERROR.format(error=str(e)))
+        logger.error(HttpMessages.Error.UNEXPECTED_ERROR.format(error=str(e)))
         return ApiBaseService.create_response(HTTPStatus.BAD_REQUEST, str(e))
 
     except UnauthorizedError:
-        logger.error(HttpErrorMessages.UNAUTHORIZED)
+        logger.error(HttpMessages.Error.UNAUTHORIZED)
         return ApiBaseService.create_response(
-            HTTPStatus.UNAUTHORIZED, HttpErrorMessages.UNAUTHORIZED
+            HTTPStatus.UNAUTHORIZED, HttpMessages.Error.UNAUTHORIZED
         )
 
     except Exception as e:
-        logger.error(HttpErrorMessages.UNEXPECTED_ERROR.format(error=str(e)))
+        logger.error(HttpMessages.Error.UNEXPECTED_ERROR.format(error=str(e)))
         return ApiBaseService.create_response(
-            HTTPStatus.INTERNAL_SERVER_ERROR, HttpErrorMessages.INTERNAL_SERVER_ERROR
+            HTTPStatus.INTERNAL_SERVER_ERROR, HttpMessages.Error.INTERNAL_SERVER_ERROR
         )
