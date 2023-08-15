@@ -1,7 +1,10 @@
-class ApiMessages:
-    class Error:
+from enum import Enum
+
+
+class ApiMessages(Enum):
+    class Error(Enum):
         JSON_SERIALIZATION_ERROR = "Failed to serialize JSON object: {error}"
 
-    class Info:
+    class Info(Enum):
         RESPONSE_CREATED = "Response created with status: {status}, message: {message}"
         REDIRECT_CREATED = "Redirect created with status: {status}, location: {location}"

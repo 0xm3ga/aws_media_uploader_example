@@ -1,11 +1,17 @@
+from http import HTTPStatus
+
 from shared.constants.logging_messages import RdsMessages
+from shared.exceptions import AppError
 
-from .base_exceptions import CustomException
 
-
-class RDSCommunicationError(CustomException):
+class RDSCommunicationError(AppError):
     """Exception raised for errors in communication with RDS."""
 
     def __init__(self, error: str):
-        super().__init__(error)
-        self.message = RdsMessages.Error.RDS_COMMUNICATION_ERROR.format(error=error)
+        log_args = {"error": error}
+        super().__init__(
+            user_message=f"Failed to communicate with RDS: {error}",
+            log_message=RdsMessages.Error.RDS_COMMUNICATION_ERROR.format(**log_args),
+            http_status=HTTPStatus.INTERNAL_SERVER_ERROR,
+            log_args=log_args,
+        )
