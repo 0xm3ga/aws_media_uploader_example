@@ -30,22 +30,22 @@
 #         (
 #             PreprocessingError("Test Error"),
 #             HTTPStatus.BAD_REQUEST,
-#             ProcessingErrorMessages.GENERIC_PROCESSING_ERROR,
+#             ProcessingErrorMessages.GENERIC_ERROR,
 #         ),
 #         (
 #             MissingParameterError("Test Param"),
 #             HTTPStatus.BAD_REQUEST,
-#             ProcessingErrorMessages.GENERIC_PROCESSING_ERROR,
+#             ProcessingErrorMessages.GENERIC_ERROR,
 #         ),
 #         (
 #             InvalidTypeError("param", str, int),
 #             HTTPStatus.BAD_REQUEST,
-#             ProcessingErrorMessages.GENERIC_PROCESSING_ERROR,
+#             ProcessingErrorMessages.GENERIC_ERROR,
 #         ),
 #         (
 #             InvalidValueError("param", "not_allowed", ["allowed"]),
 #             HTTPStatus.BAD_REQUEST,
-#             ProcessingErrorMessages.GENERIC_PROCESSING_ERROR,
+#             ProcessingErrorMessages.GENERIC_ERROR,
 #         ),
 #         # (
 #         #     ObjectNotFoundError(),
