@@ -3,10 +3,10 @@ from typing import Any, Dict, Optional, Type
 
 from shared.constants.logging_messages import ValidationMessages
 from shared.exceptions import (
-    InvalidTypeError,
-    InvalidValueError,
+    InvalidParamTypeError,
+    InvalidParamValueError,
+    MissingAuthorizerError,
     MissingParameterError,
-    UnauthorizedError,
 )
 
 
@@ -24,10 +24,9 @@ class EventValidator:
                 return None
             else:
                 self.logger.error(ValidationMessages.Error.MISSING_PARAMETER.format(parameter=key))
-                raise MissingParameterError(parameter=key)
+                raise MissingParameterError(param=key)
 
     def _validate_type(self, value: Any, name: str, expected_type: Optional[Type] = None):
-        print(f"Inside _validate_type: {value}, {name}, {expected_type}")
         if value is None or expected_type is None:
             return
 
@@ -42,7 +41,7 @@ class EventValidator:
                     expected=expected_type.__name__,
                 )
             )
-            raise InvalidTypeError(
+            raise InvalidParamTypeError(
                 parameter=name,
                 actual=type(value).__name__,
                 expected=expected_type.__name__,
@@ -54,13 +53,17 @@ class EventValidator:
 
         if value not in allowed_values:
             self.logger.error(
-                ValidationMessages.Error.PARAMETER_NOT_IN_SET.format(
+                ValidationMessages.Error.PARAMETER_NOT_ALLOWED.format(
                     parameter=name,
                     value=value,
                     allowed_values=allowed_values,
                 )
             )
-            raise InvalidValueError(parameter=name, value=value, allowed_values=allowed_values)
+            raise InvalidParamValueError(
+                parameter=name,
+                actual=value,
+                allowed=allowed_values,
+            )
 
     def _get_and_validate(
         self,
@@ -117,8 +120,8 @@ class EventValidator:
                 optional=optional,
             )
         except MissingParameterError:
-            self.logger.error(ValidationMessages.Error.UNAUTHORIZED)
-            raise UnauthorizedError(ValidationMessages.Error.UNAUTHORIZED)
+            MissingAuthorizerError.log_error
+            raise MissingAuthorizerError
 
         self.logger.info(ValidationMessages.Info.AUTHORIZE_SUCCESSFUL.format(parameter=name))
         return value

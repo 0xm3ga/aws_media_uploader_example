@@ -1,7 +1,8 @@
 class RdsMessages:
     class Error:
+        GENERIC_ERROR = "Unexpected error occurred"
         RDS_COMMUNICATION_ERROR = "Error communicating with RDS: {error}"
-        INVALID_RDS_RESPONSE = "Invalid RDS response, missing required variables: {missing_data}"
+        MISSING_VARIABLES_IN_RESPONSE = "Invalid RDS response, missing required variables: {error}"
         UNEXPECTED_ERROR = "Unexpected error occurred: {error}"
 
     class Info:

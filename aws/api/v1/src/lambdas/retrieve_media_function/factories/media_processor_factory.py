@@ -34,5 +34,5 @@ class MediaProcessorFactory:
         elif media_type == MediaType.VIDEO:
             return VideoProcessor(bucket, key, filename, extension, sizes, username)
         else:
-            logger.error(LambdaMessages.Error.ERROR_UNSUPPORTED_FILE_TYPE.format(media_type.value))
+            logger.error(LambdaMessages.Error.ERROR_UNSUPPORTED_EXTENSION.format(media_type.value))
             raise UnsupportedFileTypeError(media_type.value)

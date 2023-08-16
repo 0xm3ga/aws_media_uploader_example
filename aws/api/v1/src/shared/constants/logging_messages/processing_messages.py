@@ -1,6 +1,6 @@
 class ProcessingMessages:
     class Error:
-        GENERIC_PROCESSING_ERROR = "An error occurred during preprocessing"
+        GENERIC_ERROR = "An error occurred during preprocessing"
         UNSUPPORTED_EXTENSION = "Extension {extension} is not supported."
         UNSUPPORTED_SIZE = "Size '{size}' is not supported."
         NO_PATH_PARAMS = "No path parameters provided in the event."
@@ -15,3 +15,6 @@ class ProcessingMessages:
 
     class Info:
         pass  # Placeholder for processing related info messages
+
+    class User:
+        UNSUPPORTED_SIZE = "Size '{size}' is not supported."

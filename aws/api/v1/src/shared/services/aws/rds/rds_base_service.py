@@ -3,7 +3,7 @@ from typing import Dict, Tuple
 
 from botocore.exceptions import BotoCoreError
 from shared.constants.logging_messages import RdsMessages
-from shared.exceptions import MissingRequiredRDSVariablesError, RDSCommunicationError
+from shared.exceptions import MissingRequiredRDSVariablesError, RdsCommunicationError
 
 logger = logging.getLogger(__name__)
 
@@ -23,11 +23,11 @@ class RdsBaseService:
         except BotoCoreError as e:
             error_message = RdsMessages.Error.RDS_COMMUNICATION_ERROR.format(error=str(e))
             logger.error(error_message)
-            raise RDSCommunicationError(error_message) from None
+            raise RdsCommunicationError(error_message) from None
         except Exception as e:
             error_message = RdsMessages.Error.UNEXPECTED_ERROR.format(error=str(e))
             logger.error(error_message)
-            raise RDSCommunicationError(error_message) from None
+            raise RdsCommunicationError(error_message) from None
 
     @staticmethod
     def fetch_media_info_from_rds(filename: str) -> Tuple[str, str]:

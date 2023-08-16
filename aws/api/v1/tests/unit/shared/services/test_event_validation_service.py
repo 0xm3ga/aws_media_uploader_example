@@ -5,10 +5,10 @@ import pytest
 
 from aws.api.v1.src.shared.services.event_validation_service import (
     EventValidator,
-    InvalidTypeError,
-    InvalidValueError,
+    InvalidParamTypeError,
+    InvalidParamValueError,
+    MissingAuthorizerError,
     MissingParameterError,
-    UnauthorizedError,
     ValidationMessages,
 )
 
@@ -71,7 +71,7 @@ def test_get_query_string_parameter_exists(validator_with_mocked_logger):
 @pytest.mark.parametrize("event", [EVENT_NAMES["INVALID_QUERY_TYPE"]], indirect=True)
 def test_get_query_string_parameter_wrong_type(validator_with_mocked_logger):
     validator, mock_logger = validator_with_mocked_logger
-    with pytest.raises(InvalidTypeError):
+    with pytest.raises(InvalidParamTypeError):
         validator.get_query_string_parameter("invalid_type_param", expected_type=int)
     expected_message = ValidationMessages.Error.INVALID_TYPE.format(
         parameter="invalid_type_param",
@@ -84,12 +84,12 @@ def test_get_query_string_parameter_wrong_type(validator_with_mocked_logger):
 @pytest.mark.parametrize("event", [EVENT_NAMES["VALID"]], indirect=True)
 def test_get_query_string_parameter_not_in_allowed_values(validator_with_mocked_logger):
     validator, mock_logger = validator_with_mocked_logger
-    with pytest.raises(InvalidValueError):
+    with pytest.raises(InvalidParamValueError):
         validator.get_query_string_parameter(
             "valid_param",
             allowed_values=["other_value"],
         )
-    expected_message = ValidationMessages.Error.PARAMETER_NOT_IN_SET.format(
+    expected_message = ValidationMessages.Error.PARAMETER_NOT_ALLOWED.format(
         parameter="valid_param",
         value="value",
         allowed_values="['other_value']",
@@ -116,7 +116,7 @@ def test_get_path_parameter_exists(validator_with_mocked_logger):
 @pytest.mark.parametrize("event", [EVENT_NAMES["INVALID_PATH_TYPE"]], indirect=True)
 def test_get_path_parameter_wrong_type(validator_with_mocked_logger):
     validator, mock_logger = validator_with_mocked_logger
-    with pytest.raises(InvalidTypeError):
+    with pytest.raises(InvalidParamTypeError):
         validator.get_path_parameter("invalid_type_param", expected_type=str)
     expected_message = ValidationMessages.Error.INVALID_TYPE.format(
         parameter="invalid_type_param",
@@ -129,12 +129,12 @@ def test_get_path_parameter_wrong_type(validator_with_mocked_logger):
 @pytest.mark.parametrize("event", [EVENT_NAMES["VALID"]], indirect=True)
 def test_get_path_parameter_not_in_allowed_values(validator_with_mocked_logger):
     validator, mock_logger = validator_with_mocked_logger
-    with pytest.raises(InvalidValueError):
+    with pytest.raises(InvalidParamValueError):
         validator.get_path_parameter(
             "valid_param",
             allowed_values=["other_value"],
         )
-    expected_message = ValidationMessages.Error.PARAMETER_NOT_IN_SET.format(
+    expected_message = ValidationMessages.Error.PARAMETER_NOT_ALLOWED.format(
         parameter="valid_param",
         value="value",
         allowed_values="['other_value']",
@@ -146,7 +146,7 @@ def test_get_path_parameter_not_in_allowed_values(validator_with_mocked_logger):
 @pytest.mark.parametrize("event", [EVENT_NAMES["MISSING_AUTHORIZER"]], indirect=True)
 def test_get_authorizer_parameter_missing(validator_with_mocked_logger):
     validator, mock_logger = validator_with_mocked_logger
-    with pytest.raises(UnauthorizedError):
+    with pytest.raises(MissingAuthorizerError):
         validator.get_authorizer_parameter("missing_param")
     expected_message = ValidationMessages.Error.UNAUTHORIZED
     mock_logger.error.assert_any_call(expected_message)

@@ -1,16 +1,16 @@
 from http import HTTPStatus
 
-from shared.constants.logging_messages import HttpMessages, RdsMessages
+from shared.constants.logging_messages import HttpMessages, LambdaMessages
 from shared.exceptions import AppError
 
 
-class RdsError(AppError):
-    """Base class for exceptions in AWS S3 operations."""
+class LambdaError(AppError):
+    """Base class for exceptions in AWS Lamdba operations."""
 
     def __init__(
         self,
         user_message=HttpMessages.User.INTERNAL_SERVER_ERROR,
-        log_message=RdsMessages.Error.GENERIC_ERROR,
+        log_message=LambdaMessages.Error.GENERIC_ERROR,
         http_status=HTTPStatus.INTERNAL_SERVER_ERROR,
         **log_args,
     ):
@@ -22,31 +22,31 @@ class RdsError(AppError):
         )
 
 
-class RdsCommunicationError(RdsError):
-    """Exception raised for errors in communication with RDS."""
+class LambdaInvocationError(LambdaError):
+    """Raised when there is an error invoking the Lambda function."""
 
-    def __init__(self, error: str):
+    def __init__(self, error=""):
         log_args = {
             "error": error,
         }
         super().__init__(
             user_message=HttpMessages.User.INTERNAL_SERVER_ERROR,
-            log_message=RdsMessages.Error.RDS_COMMUNICATION_ERROR.format(**log_args),
+            log_message=LambdaMessages.Error.ERROR_INVOKING_LAMBDA.format(**log_args),
             http_status=HTTPStatus.INTERNAL_SERVER_ERROR,
             log_args=log_args,
         )
 
 
-class MissingRequiredRDSVariablesError(RdsError):
-    """Exception raised when required variables are missing in the response from RDS."""
+class LambdaResponseProcessingError(LambdaError):
+    """Raised when there is an error processing the Lambda function response."""
 
-    def __init__(self, error: str = ""):
+    def __init__(self, error=""):
         log_args = {
             "error": error,
         }
         super().__init__(
             user_message=HttpMessages.User.INTERNAL_SERVER_ERROR,
-            log_message=RdsMessages.Error.MISSING_VARIABLES_IN_RESPONSE.format(**log_args),
-            http_status=HTTPStatus.BAD_REQUEST,
+            log_message=LambdaMessages.Error.ERROR_PROCESSING_RESPONSE.format(**log_args),
+            http_status=HTTPStatus.INTERNAL_SERVER_ERROR,
             log_args=log_args,
         )
