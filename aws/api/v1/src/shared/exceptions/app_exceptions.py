@@ -13,8 +13,8 @@ class AppError(Exception):
 
     def __init__(
         self,
-        user_message=GeneralMessages.Error.UNEXPECTED_ERROR_MESSAGE,
-        log_message=GeneralMessages.Error.GENERIC_LOG_MESSAGE,
+        user_message=GeneralMessages.User.UNEXPECTED_ERROR,
+        log_message=GeneralMessages.Error.GENERIC_ERROR,
         http_status=HTTPStatus.INTERNAL_SERVER_ERROR,
         log_args: Optional[dict] = None,
     ):

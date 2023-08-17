@@ -13,12 +13,6 @@ class ValidationMessages:
         INVALID_PARAM_VALUE = "The '{param}' parameter has a value of '{actual}', \
             which is not in the set of allowed values: {allowed}."
 
-        # === TO DO: review
-        INVALID_FORMAT = "Invalid format provided: {extension}."
-        INVALID_SIZE = "Invalid size provided: {size}."
-        UNSUPPORTED_MIME_TYPE = "Unsupported MIME type: {mimetype}"
-        MISSING_OR_EMPTY_PARAM = "One or more parameters are missing or empty."
-
     class Info:
         VALIDATION_SUCCESSFUL = "Validation successful for {parameter}"
         AUTHORIZE_SUCCESSFUL = "Successfully authorized parameter: {parameter}"

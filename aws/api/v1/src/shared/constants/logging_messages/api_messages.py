@@ -1,6 +1,6 @@
 class ApiMessages:
     class Error:
-        JSON_SERIALIZATION_ERROR = "Failed to serialize JSON object: {error}"
+        pass
 
     class Info:
         RESPONSE_CREATED = "Response created with status: {status}, message: {message}"
