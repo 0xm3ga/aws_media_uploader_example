@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from typing import Optional
 
-from shared.constants.logging_messages import HttpMessages, MediaMessages, ProcessingMessages
+from shared.constants.logging_messages import HttpMessages, MediaMessages
 from shared.exceptions import AppError
 
 
@@ -62,7 +62,7 @@ class InvalidContentTypeError(MediaError):
         }
         super().__init__(
             user_message=HttpMessages.User.INTERNAL_SERVER_ERROR,
-            log_message=ProcessingMessages.Error.INVALID_CONTENT_TYPE.format(**log_args),
+            log_message=MediaMessages.Error.INVALID_CONTENT_TYPE.format(**log_args),
             http_status=HTTPStatus.BAD_REQUEST,
             log_args=log_args,
         )

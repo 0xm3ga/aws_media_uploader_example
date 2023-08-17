@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from shared.constants.logging_messages import HttpMessages, ProcessingMessages
+from shared.constants.logging_messages import HttpMessages, MediaMessages, ProcessingMessages
 from shared.exceptions import AppError
 
 
@@ -25,7 +25,7 @@ class UnsupportedExtensionError(ProcessingError):
         }
         super().__init__(
             user_message=f"Unsupported file extension: {extension}",
-            log_message=ProcessingMessages.Error.UNSUPPORTED_EXTENSION.format(**log_args),
+            log_message=MediaMessages.Error.UNSUPPORTED_EXTENSION.format(**log_args),
             http_status=HTTPStatus.BAD_REQUEST,
             log_args=log_args,
         )
@@ -38,7 +38,7 @@ class UnsupportedSizeError(ProcessingError):
         log_args = {"size": size}
         super().__init__(
             user_message=f"Unsupported size: {size}",
-            log_message=ProcessingMessages.Error.UNSUPPORTED_SIZE.format(**log_args),
+            log_message=MediaMessages.Error.UNSUPPORTED_SIZE.format(**log_args),
             http_status=HTTPStatus.BAD_REQUEST,
             log_args=log_args,
         )
