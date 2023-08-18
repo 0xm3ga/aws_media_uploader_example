@@ -41,5 +41,5 @@ class ApiBaseService:
         )
         return {
             "statusCode": status_code.value,
-            "headers": {"Location": location},
+            "headers": {"Location": str(location)},
         }

@@ -31,6 +31,21 @@ class UnsupportedExtensionError(ProcessingError):
         )
 
 
+class UnsupportedMediaTypeError(ProcessingError):
+    """Exception raised when an unsupported file extension is encountered."""
+
+    def __init__(self, media_type: str):
+        log_args = {
+            "media_type": media_type,
+        }
+        super().__init__(
+            user_message=MediaMessages.User.UNSUPPORTED_MEDIA_TYPE.format(**log_args),
+            log_message=MediaMessages.Error.UNSUPPORTED_MEDIA_TYPE.format(**log_args),
+            http_status=HTTPStatus.BAD_REQUEST,
+            log_args=log_args,
+        )
+
+
 class UnsupportedSizeError(ProcessingError):
     """Exception raised when an unsupported size is encountered."""
 
@@ -47,9 +62,11 @@ class UnsupportedSizeError(ProcessingError):
 class MediaProcessingError(ProcessingError):
     """Exception raised during file processing."""
 
-    def __init__(self):
+    def __init__(self, error: str = ""):
+        log_args = {"error": error}
         super().__init__(
             user_message=HttpMessages.User.INTERNAL_SERVER_ERROR,
             log_message=ProcessingMessages.Error.GENERIC_ERROR,
             http_status=HTTPStatus.BAD_REQUEST,
+            log_args=log_args,
         )

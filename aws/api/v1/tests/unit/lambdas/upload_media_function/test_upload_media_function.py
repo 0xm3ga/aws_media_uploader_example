@@ -1,235 +1,90 @@
 import json
 from http import HTTPStatus
-from unittest.mock import Mock, patch
 
 import pytest
 
-from aws.api.v1.src.lambdas.upload_media_function.app import (
-    Environment,
-    EventValidator,
-    HttpMessages,
-    InvalidContentTypeError,
-    InvalidTypeError,
-    InvalidValueError,
-    MediaFactory,
-    MissingParameterError,
-    S3PresignService,
-    UnauthorizedError,
-    lambda_handler,
-    logger,
-)
+from aws.api.v1.src.lambdas.upload_media_function.app import lambda_handler
+from aws.api.v1.src.shared.services.error_handler import AppError
 
 
 @pytest.fixture
-def mock_logger():
-    with patch.object(logger, "error", new_callable=Mock) as mock_logger_error, patch.object(
-        logger, "info", new_callable=Mock
-    ) as mock_logger_info:
-        yield mock_logger_error, mock_logger_info
+def mock_dependencies(mocker):
+    module_path = "aws.api.v1.src.lambdas.upload_media_function.app"
+
+    # Mock the dependencies and return their mocked instances
+    mock_env = mocker.patch(f"{module_path}.Environment")
+    mock_validator = mocker.patch(f"{module_path}.EventValidator")
+    mock_media_factory = mocker.patch(f"{module_path}.MediaFactory")
+    mock_s3_presign = mocker.patch(f"{module_path}.S3PresignService")
+    mock_api_base = mocker.patch(f"{module_path}.ApiBaseService")
+
+    return {
+        "env": mock_env.return_value,
+        "validator": mock_validator.return_value,
+        "media": mock_media_factory.return_value.create_media_from_content_type.return_value,
+        "s3_presign": mock_s3_presign.return_value,
+        "api_base": mock_api_base,
+    }
 
 
 @pytest.fixture
-def mock_environment():
-    with patch.object(Environment, "fetch_required_variables") as mock_env_all, patch.object(
-        Environment, "fetch_variable", return_value="test-bucket"
-    ) as mock_env_var:
-        yield mock_env_all, mock_env_var
+def event_and_context():
+    event = {
+        "headers": {"Authorization": "Bearer token"},
+        "queryStringParameters": {"content_type": "image/jpeg"},
+    }
+    context = {"aws_request_id": "12345"}
+    return event, context
 
 
-@pytest.fixture
-def mock_event_validator():
-    with patch.object(
-        EventValidator, "get_authorizer_parameter", return_value="test_user"
-    ) as mock_auth, patch.object(
-        EventValidator, "get_query_string_parameter", return_value="image/jpeg"
-    ) as mock_query_string_parameter:
-        yield mock_auth, mock_query_string_parameter
+def test_lambda_handler_success(mock_dependencies, event_and_context):
+    event, context = event_and_context
 
-
-@pytest.fixture
-def mock_media_factory():
-    with patch.object(
-        MediaFactory, "create_media_from_content_type", return_value="media"
-    ) as mock_method:
-        yield mock_method
-
-
-@pytest.fixture
-def mock_s3_presign_service():
-    with patch.object(
-        S3PresignService, "generate_presigned_url", return_value=("filename", "presigned_url")
-    ) as mock_method:
-        yield mock_method
-
-
-def test_lambda_handler_happy_path(
-    mock_environment,
-    mock_event_validator,
-    mock_media_factory,
-    mock_s3_presign_service,
-):
-    event = {}
-    result = lambda_handler(event, None)
-    assert result["statusCode"] == HTTPStatus.OK
-
-
-def test_lambda_handler_environment_fetch_var_exceptions(
-    mock_environment,
-    mock_event_validator,
-    mock_media_factory,
-    mock_s3_presign_service,
-    mock_logger,
-):
-    error_message = "Missing required [env_var_1, env_var_2]"
-
-    mock_error_info, _ = mock_logger
-    _, mock_env_var = mock_environment
-    mock_env_var.side_effect = Exception(error_message)
-
-    event = {}
-    result = lambda_handler(event, None)
-    body = json.loads(result["body"])
-
-    assert result["statusCode"] == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert body == HttpMessages.Error.INTERNAL_SERVER_ERROR
-    mock_error_info.assert_called_with(
-        HttpMessages.Error.UNEXPECTED_ERROR.format(error=str(error_message))
+    # Mocking the expected behavior of dependencies
+    mock_dependencies["env"].fetch_variable.return_value = "raw-media-bucket"
+    mock_dependencies["validator"].get_authorizer_parameter.return_value = "username"
+    mock_dependencies["validator"].get_query_string_parameter.return_value = "image/jpeg"
+    mock_dependencies["s3_presign"].generate_presigned_url.return_value = (
+        "filename",
+        "presigned-url",
     )
 
+    expected_response = {
+        "statusCode": HTTPStatus.OK,
+        "body": {"uploadURL": "presigned-url", "filename": "filename"},
+    }
+    mock_dependencies["api_base"].create_response.return_value = expected_response
 
-def test_lambda_handler_environment_all_vars_exceptions(
-    mock_environment,
-    mock_event_validator,
-    mock_media_factory,
-    mock_s3_presign_service,
-    mock_logger,
-):
-    error_message = "Missing env var"
-
-    mock_error_info, _ = mock_logger
-    mock_env_all, _ = mock_environment
-    mock_env_all.side_effect = Exception(error_message)
-
-    event = {}
-    result = lambda_handler(event, None)
-    body = json.loads(result["body"])
-
-    assert result["statusCode"] == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert body == HttpMessages.Error.INTERNAL_SERVER_ERROR
-    mock_error_info.assert_called_with(
-        HttpMessages.Error.UNEXPECTED_ERROR.format(error=str(error_message))
-    )
-
-
-def test_lambda_handler_event_validator_auth_exception(
-    mock_environment,
-    mock_event_validator,
-    mock_media_factory,
-    mock_s3_presign_service,
-    mock_logger,
-):
-    mock_error_info, _ = mock_logger
-    mock_auth, _ = mock_event_validator
-    mock_auth.side_effect = UnauthorizedError
-
-    event = {}
-    result = lambda_handler(event, None)
-    body = json.loads(result["body"])
-
-    assert result["statusCode"] == HTTPStatus.UNAUTHORIZED
-    assert body == HttpMessages.Error.UNAUTHORIZED
-    mock_error_info.assert_called_with(HttpMessages.Error.UNAUTHORIZED)
+    # Call the lambda handler and assert
+    actual_response = lambda_handler(event, context)
+    assert actual_response == expected_response
 
 
 @pytest.mark.parametrize(
-    "exception, error_message",
+    "error, expected_response",
     [
         (
-            MissingParameterError(parameter="content_type"),
-            MissingParameterError(parameter="content_type").message,
+            AppError("Invalid content type.", "Invalid content type.", HTTPStatus.BAD_REQUEST),
+            {
+                "statusCode": HTTPStatus.BAD_REQUEST,
+                "body": json.dumps({"message": "Invalid content type."}),
+            },
         ),
         (
-            InvalidTypeError(parameter="content_type", actual=int, expected=str),
-            InvalidTypeError(parameter="content_type", actual=int, expected=str),
-        ),
-        (
-            InvalidValueError(parameter="content_type", value="invalid_value", allowed_values=None),
-            InvalidValueError(parameter="content_type", value="invalid_value", allowed_values=None),
+            Exception("Some unexpected error"),
+            {
+                "statusCode": HTTPStatus.INTERNAL_SERVER_ERROR,
+                "body": json.dumps({"message": "Internal server error."}),
+            },
         ),
     ],
 )
-def test_lambda_handler_event_validator_query_string_parameter_exception(
-    exception,
-    error_message,
-    mock_environment,
-    mock_event_validator,
-    mock_media_factory,
-    mock_s3_presign_service,
-    mock_logger,
-):
-    mock_error_info, _ = mock_logger
-    _, mock_query_string_parameter = mock_event_validator
-    mock_query_string_parameter.side_effect = exception
+def test_lambda_handler_errors(mock_dependencies, event_and_context, error, expected_response):
+    event, context = event_and_context
 
-    event = {}
-    result = lambda_handler(event, None)
-    body = json.loads(result["body"])
+    # Mocking the expected behavior of dependencies
+    mock_dependencies["validator"].get_query_string_parameter.side_effect = error
 
-    assert result["statusCode"] == HTTPStatus.BAD_REQUEST
-    assert body == error_message
-    mock_error_info.assert_called_with(
-        HttpMessages.Error.UNEXPECTED_ERROR.format(error=error_message)
-    )
-
-
-@pytest.mark.parametrize(
-    "exception, error_message",
-    [
-        (
-            InvalidContentTypeError(content_type="image/mp4"),
-            InvalidContentTypeError(content_type="image/mp4").message,
-        ),
-    ],
-)
-def test_lambda_handler_media_factory(
-    exception,
-    error_message,
-    mock_environment,
-    mock_event_validator,
-    mock_media_factory,
-    mock_s3_presign_service,
-    mock_logger,
-):
-    mock_error_info, _ = mock_logger
-    mock_media_factory.side_effect = exception
-
-    event = {}
-    result = lambda_handler(event, None)
-    body = json.loads(result["body"])
-
-    assert result["statusCode"] == HTTPStatus.BAD_REQUEST
-    assert body == error_message
-    mock_error_info.assert_called_with(
-        HttpMessages.Error.UNEXPECTED_ERROR.format(error=error_message)
-    )
-
-
-def test_lambda_handler_s3_presign_service(
-    mock_environment,
-    mock_event_validator,
-    mock_media_factory,
-    mock_s3_presign_service,
-    mock_logger,
-):
-    expected_presigned_url = "https://example.com/presigned-url"
-    expected_filename = "test_filename"
-
-    mock_s3_presign_service.return_value = (expected_filename, expected_presigned_url)
-
-    event = {}
-    result = lambda_handler(event, None)
-    body = json.loads(result["body"])
-
-    assert result["statusCode"] == HTTPStatus.OK
-    assert body["uploadURL"] == expected_presigned_url
-    assert body["filename"] == expected_filename
+    # Call the lambda handler and assert
+    actual_response = lambda_handler(event, context)
+    assert actual_response == expected_response

@@ -7,7 +7,7 @@ from aws.api.v1.src.lambdas.retrieve_media_function.factories.media_processor_fa
     ImageProcessor,
     MediaProcessorFactory,
     Size,
-    UnsupportedFileTypeError,
+    UnsupportedMediaTypeError,
     VideoProcessor,
 )
 
@@ -73,7 +73,7 @@ def test_create_unsupported_processor():
         MEDIA_TYPE_PATH,
         new=MockMediaTypeEnum,
     ):
-        with pytest.raises(UnsupportedFileTypeError):
+        with pytest.raises(UnsupportedMediaTypeError):
             MediaProcessorFactory.create_processor(
                 bucket, key, filename, extension, sizes, username
             )

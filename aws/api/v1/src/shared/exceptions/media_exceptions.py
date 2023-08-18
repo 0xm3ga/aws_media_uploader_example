@@ -71,20 +71,28 @@ class InvalidContentTypeError(MediaError):
 class InvalidSizeError(MediaError):
     """Raised when an invalid or unsupported size is encountered."""
 
-    def __init__(self, m):
+    def __init__(self, size: str):
+        log_args = {
+            "size": size,
+        }
         super().__init__(
             user_message=HttpMessages.User.INTERNAL_SERVER_ERROR,
             log_message=MediaMessages.Error.INVALID_SIZE,
             http_status=HTTPStatus.BAD_REQUEST,
+            log_args=log_args,
         )
 
 
 class InvalidAspectRatioError(MediaError):
     """Raised when an invalid or unsupported aspect ratio is encountered."""
 
-    def __init__(self):
+    def __init__(self, aspect_ratio: str):
+        log_args = {
+            "aspect_ratio": aspect_ratio,
+        }
         super().__init__(
             user_message=HttpMessages.User.INTERNAL_SERVER_ERROR,
             log_message=MediaMessages.Error.INVALID_ASPECT_RATIO,
             http_status=HTTPStatus.BAD_REQUEST,
+            log_args=log_args,
         )

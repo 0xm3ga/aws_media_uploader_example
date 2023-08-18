@@ -38,8 +38,8 @@ class RdsBaseService:
         missing_data = [field for field in required_fields if field not in rds_data]
 
         if missing_data:
-            error_message = RdsMessages.Error.INVALID_RDS_RESPONSE.format(
-                missing_data=", ".join(missing_data)
+            error_message = RdsMessages.Error.MISSING_VARIABLES_IN_RESPONSE.format(
+                error=", ".join(missing_data)
             )
             logger.error(error_message)
             raise MissingRequiredRDSVariablesError(error_message)
