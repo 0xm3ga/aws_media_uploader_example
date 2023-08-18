@@ -33,8 +33,10 @@ class LambdaInvoker:
                 Payload=json.dumps(payload),
             )
         except (BotoCoreError, ClientError) as e:
-            logger.error(LambdaMessages.Error.ERROR_INVOKING_LAMBDA.format(str(e)))
-            raise MediaProcessingError(LambdaMessages.Error.ERROR_INVOKING_LAMBDA.format(str(e)))
+            logger.error(LambdaMessages.Error.ERROR_INVOKING_LAMBDA.format(error=str(e)))
+            raise MediaProcessingError(
+                LambdaMessages.Error.ERROR_INVOKING_LAMBDA.format(error=str(e))
+            )
 
         return self._process_response(response)
 

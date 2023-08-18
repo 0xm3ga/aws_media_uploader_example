@@ -1,61 +1,85 @@
+import json
 from http import HTTPStatus
-from unittest.mock import Mock, patch
 
 import pytest
 
 from aws.api.v1.src.lambdas.retrieve_media_function.app import lambda_handler
+from aws.api.v1.src.shared.services.error_handler import AppError
 
 
 @pytest.fixture
-def mock_event():
+def mock_dependencies(mocker):
+    module_path = "aws.api.v1.src.lambdas.retrieve_media_function.app"
+
+    # Mock the dependencies and return their mocked instances
+    mock_env = mocker.patch(f"{module_path}.Environment")
+    mock_validator = mocker.patch(f"{module_path}.EventValidator")
+    mock_media_request = mocker.patch(f"{module_path}.MediaRequest")
+    mock_api_base = mocker.patch(f"{module_path}.ApiBaseService")
+
     return {
-        "pathParameters": {"filename": "testfile.jpg"},
-        "queryStringParameters": {"extension": "jpeg", "size": "large"},
+        "env": mock_env.return_value,
+        "validator": mock_validator.return_value,
+        "media_request": mock_media_request.return_value,
+        "api_base": mock_api_base,
     }
 
 
 @pytest.fixture
-def mock_context():
-    context = Mock()
-    context.aws_request_id = "mock_request_id"
-    context.log_group_name = "mock_log_group"
-    context.log_stream_name = "mock_log_stream"
-    return context
+def event_and_context():
+    event = {
+        "pathParameters": {"filename": "sample.jpg"},
+        "queryStringParameters": {"size": "medium", "extension": "jpg"},
+    }
+    context = {"aws_request_id": "12345"}
+    return event, context
 
 
-@patch("aws.api.v1.src.lambdas.retrieve_media_function.app.Environment")
-@patch("aws.api.v1.src.lambdas.retrieve_media_function.app.MediaRequest")
-@patch("aws.api.v1.src.lambdas.retrieve_media_function.app.extract_and_validate_event")
-def test_lambda_handler_success(
-    mock_extract, mock_media_request, mock_env, mock_event, mock_context
-):
-    mock_extract.return_value = ("filename", "size", "extension")
-    mock_media_request_instance = mock_media_request.return_value
-    mock_media_request_instance.process.return_value = "http://test.url"
-    mock_env_instance = mock_env.return_value
-    mock_env_instance.fetch_variable.side_effect = ["bucket1", "bucket2", "domain"]
+def test_lambda_handler_success(mock_dependencies, event_and_context):
+    event, context = event_and_context
 
-    response = lambda_handler(mock_event, mock_context)
+    # Mocking the expected behavior of dependencies
+    mock_dependencies["env"].fetch_variable.return_value = "raw-media-bucket"
+    mock_dependencies["validator"].get_path_parameter.return_value = "sample.jpg"
+    mock_dependencies["validator"].get_query_string_parameter.side_effect = ["medium", "jpg"]
+    mock_dependencies["media_request"].process.return_value = "https://media-url"
 
-    assert response["statusCode"] == HTTPStatus.FOUND
+    expected_response = {
+        "statusCode": HTTPStatus.FOUND,
+        "headers": {"Location": "https://media-url"},
+    }
+    mock_dependencies["api_base"].create_redirect.return_value = expected_response
+
+    # Call the lambda handler and assert
+    actual_response = lambda_handler(event, context)
+    assert actual_response == expected_response
 
 
-@patch("aws.api.v1.src.lambdas.retrieve_media_function.app.Environment")
-@patch("aws.api.v1.src.lambdas.retrieve_media_function.app.MediaRequest")
-@patch("aws.api.v1.src.lambdas.retrieve_media_function.app.extract_and_validate_event")
-@patch("aws.api.v1.src.lambdas.retrieve_media_function.app.logger")
-def test_lambda_handler_generic_exception(
-    mock_logger,
-    mock_extract,
-    mock_media_request,
-    mock_env,
-    mock_event,
-    mock_context,
-):
-    mock_extract.side_effect = Exception("Generic error for testing.")
-    mock_env_instance = mock_env.return_value
-    mock_env_instance.fetch_variable.side_effect = ["bucket1", "bucket2", "domain"]
+@pytest.mark.parametrize(
+    "error, expected_response",
+    [
+        (
+            AppError("Invalid filename.", "Invalid filename.", HTTPStatus.BAD_REQUEST),
+            {
+                "statusCode": HTTPStatus.BAD_REQUEST,
+                "body": json.dumps({"message": "Invalid filename."}),
+            },
+        ),
+        (
+            Exception("Some unexpected error"),
+            {
+                "statusCode": HTTPStatus.INTERNAL_SERVER_ERROR,
+                "body": json.dumps({"message": "Internal server error."}),
+            },
+        ),
+    ],
+)
+def test_lambda_handler_errors(mock_dependencies, event_and_context, error, expected_response):
+    event, context = event_and_context
 
-    response = lambda_handler(mock_event, mock_context)
+    # Mocking the expected behavior of dependencies
+    mock_dependencies["validator"].get_path_parameter.side_effect = error
 
-    assert response["statusCode"] == HTTPStatus.INTERNAL_SERVER_ERROR
+    # Call the lambda handler and assert
+    actual_response = lambda_handler(event, context)
+    assert actual_response == expected_response

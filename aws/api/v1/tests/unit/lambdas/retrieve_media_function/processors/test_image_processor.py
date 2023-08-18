@@ -1,18 +1,15 @@
-from unittest.mock import patch
-
 import pytest
 
 from aws.api.v1.src.lambdas.retrieve_media_function.processors.image_processor import (
     Extension,
     ImageProcessor,
-    LambdaMessages,
     MediaProcessingError,
     Size,
 )
 
 
 @pytest.fixture
-def setup_processor():
+def setup_processor(mocker):
     bucket = "test_bucket"
     key = "test_key"
     filename = "test_image.jpg"
@@ -20,12 +17,12 @@ def setup_processor():
     sizes = [Size.SMALL]
     username = "test_user"
 
-    with patch(
+    mock_invoker = mocker.patch(
         "aws.api.v1.src.lambdas.retrieve_media_function.processors.image_processor."
         "ImageProcessingInvoker"
-    ) as MockInvoker:
-        mock_invoker = MockInvoker.return_value
-        yield bucket, key, filename, extension, sizes, username, mock_invoker
+    ).return_value
+
+    return bucket, key, filename, extension, sizes, username, mock_invoker
 
 
 def test_process_successful_invocation(setup_processor):
@@ -53,7 +50,7 @@ def test_process_with_error(setup_processor):
 
     with pytest.raises(
         MediaProcessingError,
-        match=LambdaMessages.Error.ERROR_DURING_PROCESSING.format(error=error_msg),
+        match=MediaProcessingError().log_message,
     ):
         processor.process()
 

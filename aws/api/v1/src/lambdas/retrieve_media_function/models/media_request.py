@@ -1,7 +1,7 @@
 import logging
 from typing import Tuple
 
-from shared.exceptions import ObjectNotFoundError
+from shared.exceptions import MissingRequiredRDSVariablesError, ObjectNotFoundError
 from shared.media.base import Extension, MediaFormatUtils, MediaSizeUtils, Size
 from shared.media.media_factory import MediaFactory
 from shared.services.aws.rds.rds_base_service import RdsBaseService
@@ -41,13 +41,7 @@ class MediaRequest:
             self._check_object_exists(bucket=self.raw_media_bucket, key=raw_key, required=True)
 
             # process
-            processor = self._create_processor(
-                filename,
-                extension,
-                username,
-                raw_key,
-                size,
-            )
+            processor = self._create_processor(filename, extension, username, raw_key, size)
             processor.process()
 
         # return url
@@ -57,8 +51,7 @@ class MediaRequest:
         try:
             return self.rds_service.fetch_media_info_from_rds(filename)
         except Exception as e:
-            logger.error(f"Error fetching media info: {str(e)}")
-            raise
+            raise MissingRequiredRDSVariablesError(error=str(e))
 
     def _construct_raw_key(self, filename: str, username: str, s3_prefix: str) -> str:
         return self.s3_service.construct_raw_media_key(
@@ -77,7 +70,7 @@ class MediaRequest:
     def _check_object_exists(self, bucket: str, key: str, required: bool = False) -> bool:
         if not self.s3_service.object_exists(bucket=bucket, key=key):
             if required:
-                raise ObjectNotFoundError
+                raise ObjectNotFoundError(key=key, bucket=bucket)
             return False
         return True
 

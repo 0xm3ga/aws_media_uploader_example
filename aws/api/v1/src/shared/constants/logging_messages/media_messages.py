@@ -23,3 +23,6 @@ class MediaMessages:
 
     class Info:
         pass
+
+    class User:
+        UNSUPPORTED_MEDIA_TYPE = "Unsupported media type: {media_type}"

@@ -57,14 +57,14 @@ class ImageProcessingInvoker:
         try:
             return json.loads(response["Payload"].read())
         except (json.JSONDecodeError, KeyError) as e:
-            logger.error(LambdaMessages.Error.ERROR_PROCESSING_RESPONSE.format(str(e)))
+            logger.error(LambdaMessages.Error.ERROR_PROCESSING_RESPONSE.format(error=str(e)))
             raise MediaProcessingError(
                 LambdaMessages.Error.ERROR_PROCESSING_RESPONSE.format(error=str(e))
             )
 
     def _check_response_for_errors(self, response: dict):
         if "errorMessage" in response or "FunctionError" in response:
-            logger.error(LambdaMessages.Error.ERROR_DURING_PROCESSING.format(response))
+            logger.error(LambdaMessages.Error.ERROR_DURING_PROCESSING.format(error=response))
             raise MediaProcessingError(
                 LambdaMessages.Error.ERROR_DURING_PROCESSING.format(error=response)
             )

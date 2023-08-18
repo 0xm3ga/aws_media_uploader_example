@@ -3,6 +3,7 @@ import logging
 from functools import wraps
 from http import HTTPStatus
 
+from shared.constants.logging_messages import HttpMessages
 from shared.exceptions import AppError
 
 logger = logging.getLogger(__name__)
@@ -23,7 +24,7 @@ def error_handler(func):
             logger.error(f"Unhandled error occurred: {str(e)}")
             return {
                 "statusCode": HTTPStatus.INTERNAL_SERVER_ERROR,
-                "body": json.dumps({"message": "Internal Server Error"}),
+                "body": json.dumps({"message": HttpMessages.User.INTERNAL_SERVER_ERROR}),
             }
 
     return wrapper

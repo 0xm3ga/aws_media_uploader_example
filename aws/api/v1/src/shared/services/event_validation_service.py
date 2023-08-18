@@ -23,7 +23,7 @@ class EventValidator:
             if optional:
                 return None
             else:
-                self.logger.error(ValidationMessages.Error.MISSING_PARAMETER.format(parameter=key))
+                self.logger.error(ValidationMessages.Error.MISSING_PARAM.format(param=key))
                 raise MissingParameterError(param=key)
 
     def _validate_type(self, value: Any, name: str, expected_type: Optional[Type] = None):
@@ -35,16 +35,16 @@ class EventValidator:
                 f"Value: {value}, Type: {type(value)}, Expected Type: {expected_type}"
             )  # Add this line
             self.logger.error(
-                ValidationMessages.Error.INVALID_TYPE.format(
-                    parameter=name,
+                ValidationMessages.Error.INVALID_PARAM_TYPE.format(
+                    param=name,
                     actual=type(value).__name__,
-                    expected=expected_type.__name__,
+                    allowed=expected_type.__name__,
                 )
             )
             raise InvalidParamTypeError(
-                parameter=name,
+                param=name,
                 actual=type(value).__name__,
-                expected=expected_type.__name__,
+                allowed=expected_type.__name__,
             )
 
     def _validate_value(self, value: Any, name: str, allowed_values=None):
@@ -53,14 +53,14 @@ class EventValidator:
 
         if value not in allowed_values:
             self.logger.error(
-                ValidationMessages.Error.PARAMETER_NOT_ALLOWED.format(
-                    parameter=name,
-                    value=value,
-                    allowed_values=allowed_values,
+                ValidationMessages.Error.INVALID_PARAM_VALUE.format(
+                    param=name,
+                    actual=value,
+                    allowed=allowed_values,
                 )
             )
             raise InvalidParamValueError(
-                parameter=name,
+                param=name,
                 actual=value,
                 allowed=allowed_values,
             )

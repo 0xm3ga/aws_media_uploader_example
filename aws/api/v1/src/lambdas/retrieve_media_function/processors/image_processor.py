@@ -1,7 +1,6 @@
 import logging
 from typing import List
 
-from shared.constants.logging_messages import LambdaMessages
 from shared.exceptions import MediaProcessingError
 from shared.media.constants import Extension, Size
 from shared.services.aws.lambdas.image_processing_service import ImageProcessingInvoker
@@ -42,6 +41,4 @@ class ImageProcessor(MediaProcessor):
             )
             return result
         except Exception as e:
-            raise MediaProcessingError(
-                LambdaMessages.Error.ERROR_DURING_PROCESSING.format(error=str(e))
-            )
+            raise MediaProcessingError(error=str(e))
