@@ -171,3 +171,34 @@ Remember to replace /path/to/project with the actual path to your project direct
    ```
 
 Upon successful installation, these pre-commit hooks will automatically format the code and check for issues each time a new commit is made, ensuring code quality and consistency throughout the development process.
+
+## Unit Testing
+
+This project uses `pytest` for unit testing.
+
+### Running the Tests
+
+1. Install `pytest`:
+   ```shell
+   pip install pytest
+   ```
+2. Modify your `PYTHONPATH`:
+
+   ```
+   export PYTHONPATH="{your_project_folder_location}/aws_media_uploader_example:{your_project_folder_location}/aws_media_uploader_example/aws/api/v1/src"
+   ```
+
+3. Run the tests from the project root:
+   ```
+   pytest
+   ```
+
+### Test Structure
+
+- Tests are in files prefixed with `test_`.
+- We use parameterized testing and mocking.
+- Tests follow the Arrange-Act-Assert pattern.
+
+### Test Output
+
+`pytest` will show the results, including passed and failed tests.
