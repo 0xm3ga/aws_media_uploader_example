@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 from botocore.exceptions import BotoCoreError, ClientError
 
-from aws.api.v1.src.shared.services.aws.lambdas.lambda_invocation_service import (
+from shared.services.aws.lambdas.lambda_invocation_service import (
     LambdaInvoker,
     MediaProcessingError,
 )

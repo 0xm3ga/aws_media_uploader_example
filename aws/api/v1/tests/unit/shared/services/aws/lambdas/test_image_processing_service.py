@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from aws.api.v1.src.shared.services.aws.lambdas.image_processing_service import (
+from shared.services.aws.lambdas.image_processing_service import (
     Extension,
     ImageProcessingInvoker,
     LambdaInvoker,

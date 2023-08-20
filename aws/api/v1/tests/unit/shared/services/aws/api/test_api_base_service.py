@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
-from aws.api.v1.src.shared.services.aws.api.api_base_service import ApiBaseService, ApiMessages
+from shared.services.aws.api.api_base_service import ApiBaseService, ApiMessages
 
 # ===================== CONSTANTS =====================
 VALID_MESSAGE_OBJECT = {"message": "Hello, World!"}
@@ -34,7 +34,7 @@ class TestApiBaseService:
             assert response["statusCode"] == VALID_STATUS_CODE.value
             assert response["body"] == expected_body
 
-    @patch("aws.api.v1.src.shared.services.aws.api.api_base_service.logger.info")
+    @patch("shared.services.aws.api.api_base_service.logger.info")
     def test_create_response_logging(self, mock_logger_info):
         """Test that creating a response logs the correct information."""
         ApiBaseService.create_response(VALID_STATUS_CODE, VALID_MESSAGE_OBJECT)
@@ -56,7 +56,7 @@ class TestApiBaseService:
         assert response["statusCode"] == VALID_STATUS_CODE.value
         assert response["headers"]["Location"] == expected_location
 
-    @patch("aws.api.v1.src.shared.services.aws.api.api_base_service.logger.info")
+    @patch("shared.services.aws.api.api_base_service.logger.info")
     def test_create_redirect_logging(self, mock_logger_info):
         """Test that creating a redirect logs the correct information."""
         ApiBaseService.create_redirect(VALID_STATUS_CODE, VALID_REDIRECT_LOCATION)

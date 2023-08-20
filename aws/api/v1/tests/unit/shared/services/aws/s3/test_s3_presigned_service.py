@@ -2,11 +2,7 @@ from unittest.mock import Mock, PropertyMock, patch
 
 import pytest
 
-from aws.api.v1.src.shared.services.aws.s3.s3_presigned_service import (
-    ImageMedia,
-    S3PresignService,
-    VideoMedia,
-)
+from shared.services.aws.s3.s3_presigned_service import ImageMedia, S3PresignService, VideoMedia
 
 # ===================== CONSTANTS =====================
 VALID_USERNAME = "test_user"
@@ -28,7 +24,7 @@ type(mock_video_media).content_type = PropertyMock(return_value=VIDEO_CONTENT_TY
 
 
 @patch(
-    "aws.api.v1.src.shared.services.aws.s3.s3_presigned_service.uuid.uuid4",
+    "shared.services.aws.s3.s3_presigned_service.uuid.uuid4",
     return_value="mock-uuid",
 )
 @patch("boto3.client")
@@ -48,7 +44,7 @@ def test_generate_presigned_url_for_image(mock_boto3_client, mock_uuid):
 
 
 @patch(
-    "aws.api.v1.src.shared.services.aws.s3.s3_presigned_service.uuid.uuid4",
+    "shared.services.aws.s3.s3_presigned_service.uuid.uuid4",
     return_value="mock-uuid",
 )
 @patch("boto3.client")

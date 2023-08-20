@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 from botocore.exceptions import BotoCoreError
 
-from aws.api.v1.src.shared.services.aws.rds.rds_base_service import (
+from shared.services.aws.rds.rds_base_service import (
     MissingRequiredRDSVariablesError,
     RdsBaseService,
     RdsMessages,
@@ -33,7 +33,7 @@ class TestRdsBaseService:
         assert data == RDS_MOCK_DATA
 
     @patch(
-        "aws.api.v1.src.shared.services.aws.rds.rds_base_service.RdsBaseService.get_rds_data",
+        "shared.services.aws.rds.rds_base_service.RdsBaseService.get_rds_data",
         side_effect=BotoCoreError(),
     )
     def test_get_rds_data_boto_error(self, mock_get_rds_data):
@@ -42,7 +42,7 @@ class TestRdsBaseService:
             RdsBaseService.get_rds_data(VALID_FILENAME)
 
     @patch(
-        "aws.api.v1.src.shared.services.aws.rds.rds_base_service.RdsBaseService.get_rds_data",
+        "shared.services.aws.rds.rds_base_service.RdsBaseService.get_rds_data",
         side_effect=Exception(),
     )
     def test_get_rds_data_unexpected_error(self, mock_get_rds_data):
@@ -57,7 +57,7 @@ class TestRdsBaseService:
         assert content_type == RDS_MOCK_DATA["content_type"]
 
     @patch(
-        "aws.api.v1.src.shared.services.aws.rds.rds_base_service.RdsBaseService.get_rds_data",
+        "shared.services.aws.rds.rds_base_service.RdsBaseService.get_rds_data",
         return_value=MISSING_CONTENT_TYPE_DATA,
     )
     def test_fetch_media_info_from_rds_missing_content_type(self, mock_get_rds_data):
@@ -69,7 +69,7 @@ class TestRdsBaseService:
             RdsBaseService.fetch_media_info_from_rds(VALID_FILENAME)
 
     @patch(
-        "aws.api.v1.src.shared.services.aws.rds.rds_base_service.RdsBaseService.get_rds_data",
+        "shared.services.aws.rds.rds_base_service.RdsBaseService.get_rds_data",
         return_value=MISSING_USERNAME_DATA,
     )
     def test_fetch_media_info_from_rds_missing_username(self, mock_get_rds_data):

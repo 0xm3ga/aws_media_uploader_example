@@ -4,7 +4,7 @@ from http import HTTPStatus
 import pytest
 
 from aws.api.v1.src.lambdas.retrieve_media_function.app import lambda_handler
-from aws.api.v1.src.shared.services.error_handler import AppError
+from shared.services.error_handler import AppError
 
 
 @pytest.fixture

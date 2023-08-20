@@ -1,6 +1,6 @@
 import pytest
 
-from aws.api.v1.src.shared.media.base import (
+from shared.media.base import (
     AspectRatio,
     InvalidAspectRatioError,
     InvalidMediaTypeError,

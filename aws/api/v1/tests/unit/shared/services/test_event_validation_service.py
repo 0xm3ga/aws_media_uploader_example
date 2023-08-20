@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from aws.api.v1.src.shared.services.event_validation_service import (
+from shared.services.event_validation_service import (
     EventValidator,
     InvalidParamTypeError,
     InvalidParamValueError,

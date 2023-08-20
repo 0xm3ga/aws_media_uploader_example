@@ -1,4 +1,4 @@
-from aws.api.v1.src.shared.media.constants import AspectRatioData, DimensionData
+from shared.media.constants import AspectRatioData, DimensionData
 
 
 # ===================== TESTS: AspectRatioData =====================

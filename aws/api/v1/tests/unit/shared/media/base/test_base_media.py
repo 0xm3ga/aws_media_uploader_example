@@ -1,6 +1,6 @@
 import pytest
 
-from aws.api.v1.src.shared.media.base import BaseMedia, MediaType
+from shared.media.base import BaseMedia, MediaType
 
 # ===================== CONSTANTS =====================
 S3_PREFIX_TEST_INPUTS = [

@@ -4,6 +4,7 @@ from http import HTTPStatus
 
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
+
 from shared.constants.logging_messages import HttpMessages, LambdaMessages
 from shared.exceptions import MediaProcessingError
 

@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 import pytest
 from botocore.exceptions import ClientError
 
-from aws.api.v1.src.shared.services.aws.s3.s3_base_service import S3BaseService
+from shared.services.aws.s3.s3_base_service import S3BaseService
 
 # ===================== CONSTANTS =====================
 

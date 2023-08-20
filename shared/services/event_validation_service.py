@@ -43,8 +43,8 @@ class EventValidator:
             )
             raise InvalidParamTypeError(
                 param=name,
-                actual=type(value).__name__,
-                allowed=expected_type.__name__,
+                actual=type(value),
+                allowed=[expected_type],
             )
 
     def _validate_value(self, value: Any, name: str, allowed_values=None):

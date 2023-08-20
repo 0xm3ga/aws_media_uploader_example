@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
-from aws.api.v1.src.shared.media.media_factory import (
+from shared.media.media_factory import (
     ImageMedia,
     InvalidContentTypeError,
     InvalidExtensionError,
@@ -77,7 +77,7 @@ def test_create_media_from_content_type_valid(
     Ensure correct media class is created for supported content types.
     """
     with patch(
-        "aws.api.v1.src.shared.media.media_factory.MediaFormatUtils.parse_content_type",
+        "shared.media.media_factory.MediaFormatUtils.parse_content_type",
         return_value=(media_type, None),
     ):
         media_class = media_factory.create_media_from_content_type(content_type)
@@ -91,7 +91,7 @@ def test_create_media_from_content_type_invalid(media_factory, invalid_content_t
     Ensure an error is raised when using unsupported or malformed content types.
     """
     with patch(
-        "aws.api.v1.src.shared.media.media_factory.MediaFormatUtils.parse_content_type",
+        "shared.media.media_factory.MediaFormatUtils.parse_content_type",
         return_value=(None, None),
     ):
         with pytest.raises(InvalidContentTypeError) as exception_info:
@@ -109,10 +109,10 @@ def test_create_media_from_extension_valid(media_factory, extension, expected_cl
     Ensure correct media class is created for supported file extensions.
     """
     with patch(
-        "aws.api.v1.src.shared.media.media_factory.MediaFormatUtils.convert_str_to_extension",
+        "shared.media.media_factory.MediaFormatUtils.convert_str_to_extension",
         return_value=extension,
     ), patch(
-        "aws.api.v1.src.shared.media.media_factory.MediaFormatUtils.map_extension_to_media_type",
+        "shared.media.media_factory.MediaFormatUtils.map_extension_to_media_type",
         return_value=media_type,
     ):
         media_class = media_factory.create_media_from_extension(extension)
@@ -126,10 +126,10 @@ def test_create_media_from_extension_invalid(media_factory, invalid_extension):
     Ensure an error is raised when using unsupported or malformed file extensions.
     """
     with patch(
-        "aws.api.v1.src.shared.media.media_factory.MediaFormatUtils.convert_str_to_extension",
+        "shared.media.media_factory.MediaFormatUtils.convert_str_to_extension",
         return_value=invalid_extension,
     ), patch(
-        "aws.api.v1.src.shared.media.media_factory.MediaFormatUtils.map_extension_to_media_type",
+        "shared.media.media_factory.MediaFormatUtils.map_extension_to_media_type",
         return_value=None,
     ):
         with pytest.raises(InvalidExtensionError) as exception_info:
@@ -146,9 +146,7 @@ def test_logger(media_factory):
     Test logger instantiation.
     Ensure logger is correctly initialized within the MediaFactory.
     """
-    with patch("aws.api.v1.src.shared.media.media_factory.logging.getLogger") as mock_get_logger:
+    with patch("shared.media.media_factory.logging.getLogger") as mock_get_logger:
         logger = media_factory.logger
-        mock_get_logger.assert_called_once_with(
-            "aws.api.v1.src.shared.media.media_factory.MediaFactory"
-        )
+        mock_get_logger.assert_called_once_with("shared.media.media_factory.MediaFactory")
         assert logger == media_factory._logger

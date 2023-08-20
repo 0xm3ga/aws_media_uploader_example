@@ -2,6 +2,7 @@ import logging
 from typing import Dict, Tuple
 
 from botocore.exceptions import BotoCoreError
+
 from shared.constants.logging_messages import RdsMessages
 from shared.exceptions import MissingRequiredRDSVariablesError, RdsCommunicationError
 

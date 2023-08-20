@@ -1,6 +1,6 @@
 import pytest
 
-from aws.api.v1.src.shared.media.base import MediaType, VideoMedia
+from shared.media.base import MediaType, VideoMedia
 
 # ===================== CONSTANTS =====================
 VIDEO_MEDIA_CONTENT_TYPES = [

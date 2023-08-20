@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from aws.api.v1.src.shared.services.environment_service import (
+from shared.services.environment_service import (
     Environment,
     EnvironmentMessages,
     EnvironmentVariableError,
