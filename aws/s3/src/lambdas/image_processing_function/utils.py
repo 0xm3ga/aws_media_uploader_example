@@ -5,8 +5,9 @@ from pathlib import Path
 from typing import Any
 
 from botocore.exceptions import BotoCoreError, ClientError
-from enums import ALLOWED_IMAGE_EXTENSIONS, EXTENSION_MAP
 from exceptions import S3AccessError, UnsupportedImageFormatError
+
+from shared.media import EXTENSION_ALIAS_MAP, MediaFormatUtils
 
 # from enums import ImageFormat
 
@@ -53,9 +54,9 @@ def get_extension_from_content_type(content_type: str) -> str:
         raise UnsupportedImageFormatError(f"Unknown content type: {content_type}")
 
     extension = extension.lstrip(".")
-    extension = EXTENSION_MAP.get(extension, extension)
+    extension = EXTENSION_ALIAS_MAP.get(extension, extension)
 
-    if extension not in ALLOWED_IMAGE_EXTENSIONS:
+    if MediaFormatUtils.is_extension_allowed(extension):
         logger.warning(f"Unsupported extension: {extension}")
         raise UnsupportedImageFormatError(f"Unsupported extension: {extension}")
     assert extension is not None, "extension should not be None at this point"
