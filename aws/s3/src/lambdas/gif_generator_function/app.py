@@ -5,6 +5,8 @@ import boto3
 from botocore.exceptions import NoCredentialsError
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 
+from shared.media import Extension
+
 s3_client = boto3.client("s3")
 lambda_client = boto3.client("lambda")
 
@@ -41,7 +43,7 @@ def lambda_handler(event, context):
         Payload=json.dumps(
             {
                 "bucket": processed_media_bucket,
-                "format": ["gif"],
+                "format": [Extension.GIF.value],
                 "key": key,
             }
         ),

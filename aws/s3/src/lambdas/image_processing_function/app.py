@@ -4,8 +4,9 @@ from http import HTTPStatus
 
 import boto3
 from aws_image_service import AWSImageProcessingService
-from enums import ImageFormat, ImageSize
 from exceptions import EnvironmentVariableNotFound, ValidationError
+
+from shared.media import Extension, Size
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -21,15 +22,17 @@ def validate_event(event):
     bucket = event.get("bucket")
     key = event.get("key")
     filename = event.get("filename")
-    format = event.get("format")
+    extension = event.get("extension")
     sizes = event.get("sizes")
 
-    ValidationError.check_required_fields(event, ["bucket", "key", "filename", "format", "sizes"])
-    ValidationError.check_value(format, ImageFormat._member_names_, "format")
-    ValidationError.check_subset(sizes, ImageSize._member_names_, "sizes")
+    ValidationError.check_required_fields(
+        event, ["bucket", "key", "filename", "extension", "sizes"]
+    )
+    ValidationError.check_value(extension, Extension._member_names_, "extension")
+    ValidationError.check_subset(sizes, Size._member_names_, "sizes")
     ValidationError.check_non_empty_list(sizes, "sizes")
 
-    return bucket, key, filename, ImageFormat[format], [ImageSize[size] for size in sizes]
+    return bucket, key, filename, Extension[extension], [Size[size] for size in sizes]
 
 
 def lambda_handler(event, context):
@@ -41,7 +44,7 @@ def lambda_handler(event, context):
         return {"statusCode": HTTPStatus.INTERNAL_SERVER_ERROR, "body": "Internal Server Error"}
 
     try:
-        bucket, key, filename, format, sizes = validate_event(event)
+        bucket, key, filename, extension, sizes = validate_event(event)
     except ValidationError as e:
         logger.error("Validation Error: %s", e)
         return {"statusCode": HTTPStatus.BAD_REQUEST, "body": str(e)}
@@ -50,7 +53,7 @@ def lambda_handler(event, context):
     service = AWSImageProcessingService(s3_client, processed_bucket)
 
     try:
-        service.process_image(bucket, key, filename, format, sizes)
+        service.process_image(bucket, key, filename, extension, sizes)
     except Exception as e:
         logger.error("Unexpected error: %s", e)
         return {"statusCode": HTTPStatus.INTERNAL_SERVER_ERROR, "body": "Internal Server Error"}

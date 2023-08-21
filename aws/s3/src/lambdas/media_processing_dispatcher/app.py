@@ -1,9 +1,12 @@
 import json
 import logging
 import os
+from http import HTTPStatus
 
 import boto3
-from enums import ImageFormat, ImageSize
+
+from shared.media import Extension, Size
+from shared.services.aws.api.api_base_service import ApiBaseService
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -47,10 +50,10 @@ def lambda_handler(event, context):
         logger.info(f"Processing file {key} from bucket {bucket}")
     except Exception:
         logger.error("Couldn't get bucket and key from the s3 record")
-        return {
-            "statusCode": 500,
-            "body": json.dumps("Couldn't get bucket and key from the s3 record"),
-        }
+        return ApiBaseService.create_response(
+            status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+            message=json.dumps("Couldn't get bucket and key from the s3 record"),
+        )
 
     # Getting additional info
     filename = get_filename(key)
@@ -62,13 +65,13 @@ def lambda_handler(event, context):
     # Depending on the file type, dispatch to the appropriate Lambda function
     if content_type.startswith("image/"):
         # Specifying which format and what sizes to generate.
-        format = ImageFormat.JPEG.name
+        extension = Extension.JPEG.name
         sizes = [
-            ImageSize.TINY.name,
-            ImageSize.SMALL.name,
-            ImageSize.MEDIUM.name,
-            ImageSize.LARGE.name,
-            ImageSize.HUGE.name,
+            Size.TINY.name,
+            Size.SMALL.name,
+            Size.MEDIUM.name,
+            Size.LARGE.name,
+            Size.HUGE.name,
         ]
 
         lambda_client.invoke(
@@ -79,7 +82,7 @@ def lambda_handler(event, context):
                     "bucket": bucket,
                     "key": key,
                     "filename": filename,
-                    "format": format,
+                    "extension": extension,
                     "sizes": sizes,
                 }
             ),
@@ -93,14 +96,14 @@ def lambda_handler(event, context):
 
     else:
         logger.error(f"Unsupported content type: {content_type}")
-        return {
-            "statusCode": 500,
-            "body": json.dumps(
+        return ApiBaseService.create_response(
+            status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+            message=json.dumps(
                 f"Unsupported content type: {content_type}",
             ),
-        }
+        )
 
-    return {
-        "statusCode": 200,
-        "body": json.dumps("Processing job started"),
-    }
+    return ApiBaseService.create_response(
+        status_code=HTTPStatus.OK,
+        message=json.dumps("Processing job started"),
+    )

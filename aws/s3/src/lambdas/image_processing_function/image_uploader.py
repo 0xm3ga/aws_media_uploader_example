@@ -3,10 +3,12 @@ from pathlib import Path
 
 from botocore.client import BaseClient
 from botocore.exceptions import BotoCoreError
-from enums import ImageFormat, ImageSize
 from image_media import ImageMedia
 from s3_utils import upload_file_to_s3
 from tenacity import retry, stop_after_attempt, wait_exponential
+
+from shared.media import Extension, Size
+from shared.media.base import MediaFormatUtils
 
 logger = logging.getLogger(__name__)
 
@@ -27,11 +29,11 @@ class ImageUploader:
         new_path: Path,
         processed_bucket: str,
         image_media: ImageMedia,
-        image_size: ImageSize,
-        image_format: ImageFormat,
+        size: Size,
+        extension: Extension,
     ) -> None:
         """Upload the image file to S3, retrying up to 3 times on failure."""
-        new_key = self._construct_new_key(image_media.filename, image_size, image_format)
+        new_key = self._construct_new_key(image_media.filename, size, extension)
 
         try:
             logger.info(f"Uploading image: {new_key} to bucket: {processed_bucket}")
@@ -40,7 +42,7 @@ class ImageUploader:
                 new_path,
                 processed_bucket,
                 new_key,
-                image_format.content_type,
+                MediaFormatUtils.map_extension_to_media_type(extension=extension).value,
             )
             logger.info(f"Uploaded image: {new_key} to bucket: {processed_bucket}")
         except BotoCoreError as e:
@@ -64,8 +66,6 @@ class ImageUploader:
         else:
             logger.warning(f"Image file: {new_path} not found.")
 
-    def _construct_new_key(
-        self, filename: str, image_size: ImageSize, image_format: ImageFormat
-    ) -> str:
+    def _construct_new_key(self, filename: str, size: Size, extension: Extension) -> str:
         """Construct a new key based on the filename, size and format."""
-        return f"{filename}/{image_size.name.lower()}.{image_format.value}"
+        return f"{filename}/{size.name.lower()}.{extension.value}"

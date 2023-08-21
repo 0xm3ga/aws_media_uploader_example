@@ -4,12 +4,13 @@ from typing import List
 
 from botocore.client import BaseClient
 from botocore.exceptions import BotoCoreError
-from enums import ImageFormat, ImageSize
 from image_downloader import ImageDownloader
 from image_media import ImageMedia
 from image_processor import ImageProcessor
 from image_uploader import ImageUploader
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
+
+from shared.media import Extension, Size
 
 logger = logging.getLogger(__name__)
 
@@ -32,8 +33,8 @@ class ImageService:
         self,
         image_media: ImageMedia,
         processed_bucket: str,
-        format: ImageFormat,
-        sizes: List[ImageSize],
+        extension: Extension,
+        sizes: List[Size],
     ) -> None:
         download_path = None
         try:
@@ -44,7 +45,7 @@ class ImageService:
                     download_path,
                     image_media,
                     processed_bucket,
-                    format,
+                    extension,
                     sizes,
                     executor,
                     self.uploader,
